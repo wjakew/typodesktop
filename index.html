@@ -29,6 +29,9 @@
       <div id="selected-note-name"></div>
     </div>
     <div class="top-bar-right">
+      <button id="preview-toggle" class="action-btn icon-only" title="Toggle Preview">
+        <i class="fas fa-eye"></i>
+      </button>
       <button id="change-folder-btn" class="action-btn icon-only" title="Change Folder">
         <i class="fas fa-folder-open"></i>
       </button>
@@ -47,7 +50,10 @@
       <div id="files-container"></div>
     </div>
     <div class="editor-container">
-      <textarea id="editor"></textarea>
+      <div class="editor-wrapper">
+        <textarea id="editor"></textarea>
+        <div id="preview" class="markdown-preview hidden"></div>
+      </div>
       <button id="save-btn" class="hidden">
         <i class="fas fa-save"></i>
         <span id="save-btn-text">Save</span>

@@ -5,6 +5,15 @@ const fs = require('fs');
 let folderPath = null;
 let mainWindow = null;
 
+// Add error handling for the main process
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+});
+
+process.on('unhandledRejection', (error) => {
+  console.error('Unhandled Rejection:', error);
+});
+
 // Add folder persistence
 function getStoredFolderPath() {
   const userDataPath = app.getPath('userData');
@@ -37,7 +46,7 @@ function createWindow() {
     frame: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-      nodeIntegration: false,
+      nodeIntegration: true,
       contextIsolation: true
     }
   });
@@ -49,6 +58,19 @@ function createWindow() {
     if (input.control && input.key.toLowerCase() === 'i') {
       mainWindow.webContents.openDevTools();
       event.preventDefault();
+    }
+  });
+
+  // Open DevTools in development
+  if (process.env.NODE_ENV === 'development') {
+    mainWindow.webContents.openDevTools();
+  }
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    // Try to load stored folder path after window is ready
+    folderPath = getStoredFolderPath();
+    if (folderPath && fs.existsSync(folderPath)) {
+      mainWindow.webContents.send('folder-selected', folderPath);
     }
   });
 }

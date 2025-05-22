@@ -134,17 +134,27 @@ body {
     overflow: hidden;
 }
 
-#editor { 
-    flex: 1; 
-    padding: 20px; 
-    border: none; 
-    outline: none; 
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    font-size: 14px;
-    line-height: 1.6;
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
-    resize: none;
+.editor-wrapper {
+  display: flex;
+  flex: 1;
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+#editor {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  border: none;
+  outline: none;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: none;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 #save-btn { 
@@ -413,4 +423,90 @@ body {
     color: var(--text-primary);
     font-weight: 500;
     padding: 8px;
+}
+
+.markdown-preview {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-left: 1px solid var(--border-color);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.markdown-preview.hidden {
+  display: none;
+}
+
+.editor-wrapper.split #editor {
+  width: 50%;
+  border-right: 1px solid var(--border-color);
+}
+
+.editor-wrapper.split .markdown-preview {
+  width: 50%;
+}
+
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3,
+.markdown-preview h4,
+.markdown-preview h5,
+.markdown-preview h6 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  color: var(--text-color);
+}
+
+.markdown-preview p {
+  margin: 1em 0;
+  line-height: 1.6;
+}
+
+.markdown-preview code {
+  background: var(--code-bg);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9em;
+}
+
+.markdown-preview pre {
+  background: var(--code-bg);
+  padding: 1em;
+  border-radius: 5px;
+  overflow-x: auto;
+}
+
+.markdown-preview pre code {
+  background: none;
+  padding: 0;
+}
+
+.markdown-preview blockquote {
+  border-left: 4px solid var(--border-color);
+  margin: 1em 0;
+  padding-left: 1em;
+  color: var(--text-muted);
+}
+
+.markdown-preview ul,
+.markdown-preview ol {
+  padding-left: 2em;
+  margin: 1em 0;
+}
+
+.markdown-preview img {
+  max-width: 100%;
+  height: auto;
+}
+
+.markdown-preview a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+.markdown-preview a:hover {
+  text-decoration: underline;
 }

@@ -8,7 +8,9 @@ let selectedFolderPath = '';
 // Function to update selected note name in top bar
 function updateSelectedNoteName(filename) {
     const selectedNoteNameElement = document.getElementById('selected-note-name');
-    selectedNoteNameElement.textContent = filename || '';
+    if (selectedNoteNameElement) {
+        selectedNoteNameElement.textContent = filename || '';
+    }
 }
 
 // Change folder button functionality
@@ -293,19 +295,26 @@ function updateFileList(files) {
 async function loadFileContent(filePath) {
   try {
     const content = await window.api.loadFileByPath(filePath);
-    originalContent = content;
     editor.value = content;
-    currentFile = filePath;
+    originalContent = content;
+    updatePreview();  // Update preview when loading new file
+    
+    // Remove previous selection
+    if (selectedFile) {
+      selectedFile.classList.remove('selected');
+    }
+    
+    // Update the selected note name
+    updateSelectedNoteName(filePath);
     
     // Reset editing state
     isEditing = false;
     saveBtn.classList.remove('visible');
     saveBtn.classList.add('hidden');
     
-    return true;
   } catch (error) {
-    showNotification('Error loading file: ' + filePath, 'error');
-    return false;
+    console.error('Error loading file:', error);
+    showNotification('Error loading file', 'error');
   }
 }
 
@@ -394,5 +403,61 @@ document.querySelector('.titlebar-drag').addEventListener('dblclick', () => {
     maximizeIcon.classList.toggle('fa-expand');
     maximizeIcon.classList.toggle('fa-compress');
     window.api.maximizeWindow();
+});
+
+// Add preview toggle functionality
+const previewToggle = document.getElementById('preview-toggle');
+const previewContainer = document.getElementById('preview');
+const editorWrapper = document.querySelector('.editor-wrapper');
+let isPreviewVisible = false;
+
+// Function to update preview content
+function updatePreview() {
+  if (!isPreviewVisible) return;
+  try {
+    const markdown = editor.value || '';
+    const html = window.api.marked(markdown);
+    previewContainer.innerHTML = html;
+  } catch (error) {
+    console.error('Error updating preview:', error);
+    showNotification('Error updating preview', 'error');
+  }
+}
+
+// Toggle preview visibility
+previewToggle.addEventListener('click', () => {
+  try {
+    isPreviewVisible = !isPreviewVisible;
+    previewContainer.classList.toggle('hidden');
+    editorWrapper.classList.toggle('split');
+    previewToggle.querySelector('i').classList.toggle('fa-eye-slash');
+    
+    if (isPreviewVisible) {
+      updatePreview();
+    }
+  } catch (error) {
+    console.error('Error toggling preview:', error);
+    showNotification('Error toggling preview', 'error');
+  }
+});
+
+// Update preview on editor changes
+editor.addEventListener('input', () => {
+  updatePreview();
+  
+  // Keep existing change tracking code
+  if (!currentFile) return;
+  
+  const hasChanges = editor.value !== originalContent;
+  if (hasChanges && !isEditing) {
+    isEditing = true;
+    saveBtn.classList.remove('hidden');
+    saveBtn.classList.add('visible');
+    saveBtnText.textContent = 'Update';
+  } else if (!hasChanges && isEditing) {
+    isEditing = false;
+    saveBtn.classList.remove('visible');
+    saveBtn.classList.add('hidden');
+  }
 });
   
