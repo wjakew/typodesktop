@@ -186,6 +186,17 @@ ipcMain.handle('save-file', (event, filename, content) => {
   return true;
 });
 
+ipcMain.handle('delete-file', (event, filename) => {
+    try {
+        const filePath = path.join(folderPath, filename);
+        fs.unlinkSync(filePath);
+        return true;
+    } catch (error) {
+        console.error('Error deleting file:', error);
+        throw error;
+    }
+});
+
 ipcMain.handle('rename-file', (event, oldFilename, newFilename) => {
   try {
     // Ensure new filename has .md extension

@@ -20,6 +20,7 @@ const api = {
   readFiles: () => ipcRenderer.invoke('read-files'),
   loadFileByPath: (path) => ipcRenderer.invoke('load-file-by-path', path),
   saveFile: (filename, content) => ipcRenderer.invoke('save-file', filename, content),
+  deleteFile: (filename) => ipcRenderer.invoke('delete-file', filename),
   renameFile: (oldFilename, newFilename) => ipcRenderer.invoke('rename-file', oldFilename, newFilename),
   createNewFile: (filePath, content) => ipcRenderer.invoke('create-new-file', filePath, content),
   // Window controls

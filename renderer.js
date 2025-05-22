@@ -90,6 +90,50 @@ saveBtn.addEventListener('click', async () => {
     }
 });
 
+// Delete note functionality
+const deleteNoteBtn = document.getElementById('delete-note-btn');
+
+deleteNoteBtn.addEventListener('click', async () => {
+    if (!currentFile) {
+        showNotification('Please select a note first', 'info');
+        return;
+    }
+
+    const confirmDelete = confirm(`Are you sure you want to delete "${currentFile}"? This action cannot be undone.`);
+    if (!confirmDelete) {
+        return;
+    }
+
+    try {
+        await window.api.deleteFile(currentFile);
+        
+        // Clear the editor
+        editor.value = '';
+        originalContent = '';
+        currentFile = null;
+        isEditing = false;
+        saveBtn.classList.remove('has-changes');
+        
+        // Clear selected note name
+        updateSelectedNoteName('');
+        
+        // Remove selection from file tree
+        if (selectedFile) {
+            selectedFile.classList.remove('selected');
+            selectedFile = null;
+        }
+        
+        // Refresh the file list
+        const files = await window.api.readFiles();
+        updateFileList(files);
+        
+        showNotification('Note deleted successfully', 'success');
+    } catch (error) {
+        console.error('Error deleting file:', error);
+        showNotification('Error deleting note', 'error');
+    }
+});
+
 // New file functionality
 const newFileBtn = document.getElementById('new-file-btn');
 const newFileModal = document.getElementById('new-file-modal');
