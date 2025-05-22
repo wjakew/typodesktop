@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>typo desktop</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <div id="top-bar">
+    <div class="top-bar-left">
+      <span class="app-name">typo</span>
+    </div>
+    <div class="top-bar-right">
+        <button id="new-file-btn" class="action-btn">
+            <i class="fas fa-plus"></i>
+            <span>New Note</span>
+            </button>
+      <button id="theme-toggle">
+        <i class="fas fa-moon"></i>
+      </button>
+    </div>
+  </div>
+  <div class="main-content">
+    <div id="file-list">
+      <div class="file-list-header">Files</div>
+      <div id="files-container"></div>
+    </div>
+    <div class="editor-container">
+      <textarea id="editor"></textarea>
+      <button id="save-btn" class="hidden">
+        <i class="fas fa-save"></i>
+        <span id="save-btn-text">Save</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Add modal dialog -->
+  <div id="new-file-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Create New Note</h2>
+      <input type="text" id="new-file-name" placeholder="Enter file name" />
+      <div class="modal-buttons">
+        <button id="create-file-btn" class="action-btn">Create</button>
+        <button id="cancel-file-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
