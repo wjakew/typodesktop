@@ -122,6 +122,26 @@ ipcMain.handle('show-folder-dialog', () => {
   showFolderDialog();
 });
 
+// Add handler for selecting save location
+ipcMain.handle('select-save-location', async () => {
+  if (!mainWindow) return null;
+  
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openDirectory'],
+    defaultPath: folderPath // Start from current folder
+  });
+  
+  if (!result.canceled) {
+    const selectedPath = result.filePaths[0];
+    // If the selected path is within the root folder, make it relative
+    if (selectedPath.startsWith(folderPath)) {
+      return { folderPath: path.relative(folderPath, selectedPath) };
+    }
+    return { folderPath: selectedPath };
+  }
+  return null;
+});
+
 // Function to recursively read directory
 function readDirectoryRecursively(dirPath) {
   const items = fs.readdirSync(dirPath, { withFileTypes: true });

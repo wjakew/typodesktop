@@ -861,3 +861,158 @@ body {
   font-weight: 600;
   color: var(--text-color);
 }
+
+/* Note from chat styles */
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.loading-spinner.hidden {
+  display: none;
+}
+
+.loading-spinner i {
+  font-size: 24px;
+  color: var(--accent-color);
+}
+
+.note-preview-container {
+  margin: 20px 0;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 15px;
+  background: var(--bg-color);
+}
+
+.note-preview {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  line-height: 1.6;
+  color: var(--text-color);
+}
+
+.note-preview h1,
+.note-preview h2,
+.note-preview h3,
+.note-preview h4,
+.note-preview h5,
+.note-preview h6 {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  color: var(--text-secondary);
+}
+
+.note-preview p {
+  margin: 0.8em 0;
+}
+
+.note-preview code {
+  background: var(--code-bg);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9em;
+}
+
+.note-preview pre {
+  background: var(--code-bg);
+  padding: 1em;
+  border-radius: 5px;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.note-preview pre code {
+  background: none;
+  padding: 0;
+}
+
+.note-preview ul,
+.note-preview ol {
+  padding-left: 1.5em;
+  margin: 0.8em 0;
+}
+
+.note-preview blockquote {
+  border-left: 4px solid var(--border-color);
+  margin: 1em 0;
+  padding-left: 1em;
+  color: var(--text-secondary);
+}
+
+.note-preview .error {
+  color: #fa5252;
+  padding: 10px;
+  border: 1px solid #fa5252;
+  border-radius: 4px;
+  margin: 10px 0;
+}
+
+/* Loading spinner styles */
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0;
+  color: var(--accent-color);
+}
+
+.loading-spinner i {
+  font-size: 24px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.loading-spinner.hidden {
+  display: none;
+}
+
+.form-group {
+  margin: 15px 0;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-color);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.location-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.location-input-group input {
+  flex: 1;
+}
+
+.location-input-group button {
+  padding: 6px;
+  min-width: auto;
+  height: auto;
+}

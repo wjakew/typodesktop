@@ -16,6 +16,7 @@ marked.use({
 const api = {
   onFolderSelected: (callback) => ipcRenderer.on('folder-selected', (event, path) => callback(path)),
   showFolderDialog: () => ipcRenderer.invoke('show-folder-dialog'),
+  selectSaveLocation: () => ipcRenderer.invoke('select-save-location'),
   readFiles: () => ipcRenderer.invoke('read-files'),
   loadFileByPath: (path) => ipcRenderer.invoke('load-file-by-path', path),
   saveFile: (filename, content) => ipcRenderer.invoke('save-file', filename, content),

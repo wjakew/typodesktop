@@ -717,4 +717,150 @@ if (chatContainer && editorContainer) {
 
     resizeObserver.observe(chatContainer);
 }
+
+// Create note from chat functionality
+const createNoteFromChatBtn = document.getElementById('create-note-from-chat');
+const createNoteModal = document.getElementById('create-note-from-chat-modal');
+const saveNoteFromChatBtn = document.getElementById('save-note-from-chat');
+const cancelNoteFromChatBtn = document.getElementById('cancel-note-from-chat');
+const noteTitleInput = document.getElementById('note-title');
+const noteLocationInput = document.getElementById('note-location');
+const browseLocationBtn = document.getElementById('browse-location');
+const notePreview = document.getElementById('note-preview');
+const loadingSpinner = document.querySelector('.loading-spinner');
+
+// Add folder browse button functionality
+browseLocationBtn.addEventListener('click', async () => {
+  try {
+    const result = await window.api.selectSaveLocation();
+    if (result && result.folderPath) {
+      noteLocationInput.value = result.folderPath;
+    }
+  } catch (error) {
+    console.error('Error selecting folder:', error);
+    showNotification('Error selecting folder', 'error');
+  }
+});
+
+async function generateNoteFromChat() {
+  try {
+    // Get Ollama settings first
+    const settings = await window.api.getOllamaSettings();
+    if (!settings || !settings.url || !settings.model) {
+      showNotification('Please configure Ollama settings first', 'error');
+      return;
+    }
+
+    const chatMessages = document.getElementById('chat-messages');
+    const messages = Array.from(chatMessages.children).map(msg => {
+      const isUser = msg.classList.contains('user');
+      let content = '';
+      
+      // Handle both plain text and markdown content
+      if (msg.classList.contains('markdown-content')) {
+        content = msg.innerHTML;
+      } else {
+        content = msg.textContent;
+      }
+      
+      return {
+        role: isUser ? 'user' : 'assistant',
+        content: content
+      };
+    });
+
+    if (messages.length === 0) {
+      showNotification('No chat messages to generate note from', 'error');
+      return;
+    }
+
+    loadingSpinner.classList.remove('hidden');
+    notePreview.textContent = '';
+
+    const prompt = `Please create a well-structured markdown note summarizing the following conversation. Include key points, decisions, and important information. Format it with proper headings and sections.
+
+Conversation:
+${messages.map(m => `${m.role}: ${m.content}`).join('\n')}`;
+
+    const response = await fetch(`${settings.url}/api/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: settings.model,
+        prompt: prompt,
+        stream: false
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to generate note');
+    }
+
+    const data = await response.json();
+    
+    // Convert the response to HTML for preview
+    const html = window.api.marked(data.response);
+    notePreview.innerHTML = html;
+    
+    // Store the raw markdown for saving later
+    notePreview.dataset.markdown = data.response;
+    
+    showNotification('Note generated successfully!', 'success');
+  } catch (error) {
+    console.error('Error generating note:', error);
+    notePreview.innerHTML = '<div class="error">Error generating note. Please try again.</div>';
+    showNotification('Error generating note', 'error');
+  } finally {
+    loadingSpinner.classList.add('hidden');
+  }
+}
+
+createNoteFromChatBtn.addEventListener('click', async () => {
+  createNoteModal.classList.remove('hidden');
+  noteTitleInput.value = '';
+  await generateNoteFromChat();
+});
+
+saveNoteFromChatBtn.addEventListener('click', async () => {
+  const title = noteTitleInput.value.trim();
+  if (!title) {
+    showNotification('Please enter a title for the note', 'error');
+    return;
+  }
+
+  try {
+    const fileName = title.endsWith('.md') ? title : `${title}.md`;
+    const location = noteLocationInput.value.trim();
+    
+    // Combine location and filename
+    const fullPath = location ? `${location}/${fileName}` : fileName;
+    
+    // Use the raw markdown stored in the dataset
+    const content = notePreview.dataset.markdown || notePreview.textContent;
+    
+    await window.api.saveFile(fullPath, content);
+    createNoteModal.classList.add('hidden');
+    showNotification('Note saved successfully!', 'success');
+    
+    // Refresh the file list
+    const files = await window.api.readFiles();
+    updateFileList(files);
+  } catch (error) {
+    console.error('Error saving note:', error);
+    showNotification('Error saving note', 'error');
+  }
+});
+
+cancelNoteFromChatBtn.addEventListener('click', () => {
+  createNoteModal.classList.add('hidden');
+});
+
+// Close modal when clicking outside
+createNoteModal.addEventListener('click', (e) => {
+  if (e.target === createNoteModal) {
+    createNoteModal.classList.add('hidden');
+  }
+});
   
