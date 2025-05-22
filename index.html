@@ -60,14 +60,20 @@
       <div id="files-container"></div>
     </div>
     <div class="editor-container">
+      <div class="editor-top-bar">
+        <div class="editor-note-name"></div>
+        <div class="editor-top-bar-actions">
+          <button id="delete-note-btn" class="action-btn icon-only" title="Delete Note">
+            <i class="fas fa-trash"></i>
+            <span>Delete Note</span>
+          </button>
+        </div>
+      </div>
       <div class="editor-wrapper">
         <textarea id="editor"></textarea>
         <div id="preview" class="markdown-preview hidden"></div>
       </div>
       <div class="editor-actions">
-        <button id="delete-note-btn" class="action-btn icon-only" title="Delete Note">
-          <i class="fas fa-trash"></i>
-        </button>
         <button id="chat-toggle" class="action-btn icon-only" title="Toggle Chat">
           <i class="fas fa-comments"></i>
         </button>
