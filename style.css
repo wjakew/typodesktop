@@ -6,13 +6,13 @@
     --text-color: #495057;
     --text-primary: #495057;
     --text-secondary: #343a40;
-    --accent-color: #228be6;
-    --accent-hover: #1c7ed6;
+    --accent-color: #7b2cbf;
+    --accent-hover: #5a189a;
     --icon-color: #adb5bd;
     --hover-color: #f1f3f5;
     --hover-bg: #f1f3f5;
-    --selected-bg: #e7f5ff;
-    --selected-color: #228be6;
+    --selected-bg: #e9d8fd;
+    --selected-color: #7b2cbf;
     --shadow-color: rgba(0,0,0,0.05);
 }
 
@@ -24,12 +24,12 @@
     --text-color: #d4d4d4;
     --text-primary: #d4d4d4;
     --text-secondary: #ffffff;
-    --accent-color: #0098ff;
-    --accent-hover: #0082d9;
+    --accent-color: #9d4edd;
+    --accent-hover: #7b2cbf;
     --icon-color: #858585;
     --hover-color: #2a2d2e;
     --hover-bg: #2a2d2e;
-    --selected-bg: #094771;
+    --selected-bg: #4c1d95;
     --selected-color: #ffffff;
     --shadow-color: rgba(0,0,0,0.2);
 }
@@ -208,9 +208,8 @@ body {
 
 .action-btn.icon-only {
     padding: 8px;
-    width: 36px;
-    height: 36px;
     justify-content: center;
+    background-color: gray;
 }
 
 .action-btn:hover {
