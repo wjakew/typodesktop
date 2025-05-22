@@ -4,7 +4,7 @@ contextBridge.exposeInMainWorld('api', {
   onFolderSelected: (callback) => ipcRenderer.on('folder-selected', (event, path) => callback(path)),
   showFolderDialog: () => ipcRenderer.invoke('show-folder-dialog'),
   readFiles: () => ipcRenderer.invoke('read-files'),
-  loadFile: (filename) => ipcRenderer.invoke('load-file', filename),
+  loadFileByPath: (path) => ipcRenderer.invoke('load-file-by-path', path),
   saveFile: (filename, content) => ipcRenderer.invoke('save-file', filename, content),
   renameFile: (oldFilename, newFilename) => ipcRenderer.invoke('rename-file', oldFilename, newFilename),
   createNewFile: (filename) => ipcRenderer.invoke('create-new-file', filename),

@@ -98,13 +98,43 @@ ipcMain.handle('show-folder-dialog', () => {
   showFolderDialog();
 });
 
+// Function to recursively read directory
+function readDirectoryRecursively(dirPath) {
+  const items = fs.readdirSync(dirPath, { withFileTypes: true });
+  const result = [];
+
+  for (const item of items) {
+    const fullPath = path.join(dirPath, item.name);
+    const relativePath = path.relative(folderPath, fullPath);
+    
+    if (item.isDirectory()) {
+      result.push({
+        type: 'directory',
+        name: item.name,
+        path: relativePath,
+        children: readDirectoryRecursively(fullPath)
+      });
+    } else if (item.isFile() && item.name.endsWith('.md')) {
+      result.push({
+        type: 'file',
+        name: item.name,
+        path: relativePath
+      });
+    }
+  }
+
+  return result;
+}
+
 ipcMain.handle('read-files', () => {
   if (!folderPath) return [];
-  return fs.readdirSync(folderPath).filter(f => f.endsWith('.md'));
+  return readDirectoryRecursively(folderPath);
 });
 
-ipcMain.handle('load-file', (event, filename) => {
-  return fs.readFileSync(path.join(folderPath, filename), 'utf-8');
+// Add handler for loading file with relative path
+ipcMain.handle('load-file-by-path', (event, relativePath) => {
+  const fullPath = path.join(folderPath, relativePath);
+  return fs.readFileSync(fullPath, 'utf-8');
 });
 
 ipcMain.handle('save-file', (event, filename, content) => {
@@ -137,7 +167,7 @@ ipcMain.handle('rename-file', (event, oldFilename, newFilename) => {
   }
 });
 
-ipcMain.handle('create-new-file', (event, filename) => {
+ipcMain.handle('create-new-file', (event, filePath) => {
   try {
     // Check if folder is selected
     if (!folderPath) {
@@ -145,22 +175,28 @@ ipcMain.handle('create-new-file', (event, filename) => {
     }
 
     // Validate filename
-    if (!filename || typeof filename !== 'string' || filename.trim() === '') {
+    if (!filePath || typeof filePath !== 'string' || filePath.trim() === '') {
       return { success: false, error: 'Invalid filename' };
     }
 
     // Ensure filename has .md extension
-    const newName = filename.endsWith('.md') ? filename : `${filename}.md`;
-    const filePath = path.join(folderPath, newName);
+    const newName = filePath.endsWith('.md') ? filePath : `${filePath}.md`;
+    const fullPath = path.join(folderPath, newName);
+    
+    // Create parent directories if they don't exist
+    const parentDir = path.dirname(fullPath);
+    if (!fs.existsSync(parentDir)) {
+      fs.mkdirSync(parentDir, { recursive: true });
+    }
     
     // Check if file already exists
-    if (fs.existsSync(filePath)) {
+    if (fs.existsSync(fullPath)) {
       return { success: false, error: 'File already exists' };
     }
     
     // Create empty file
-    fs.writeFileSync(filePath, '');
-    console.log('Created new file:', filePath); // Add logging
+    fs.writeFileSync(fullPath, '');
+    console.log('Created new file:', fullPath);
     
     return { success: true, filename: newName };
   } catch (error) {

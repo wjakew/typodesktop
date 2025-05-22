@@ -348,3 +348,62 @@ body {
   background: #e81123;
   color: white;
 }
+
+/* Tree View Styles */
+.tree-item {
+  margin: 2px 0;
+}
+
+.tree-item-content {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-primary);
+}
+
+.tree-item-content:hover {
+  background-color: var(--hover-bg);
+}
+
+.tree-item-content.selected {
+  background-color: var(--selected-bg);
+  color: var(--selected-color);
+}
+
+.tree-icon {
+  margin-right: 8px;
+  color: var(--icon-color);
+  width: 16px;
+  text-align: center;
+}
+
+.tree-arrow {
+  margin-right: 8px;
+  transition: transform 0.2s ease;
+  color: var(--icon-color);
+  width: 16px;
+  text-align: center;
+}
+
+.tree-arrow.rotated {
+  transform: rotate(90deg);
+}
+
+.tree-item-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tree-children {
+  overflow: hidden;
+  transition: max-height 0.2s ease;
+}
+
+.tree-children.hidden {
+  display: none;
+}

@@ -3,6 +3,7 @@ let isDarkMode = true;
 let isEditing = false;
 let originalContent = '';
 let folderPath = null;
+let selectedFolderPath = '';
 
 // Change folder button functionality
 const changeFolderBtn = document.getElementById('change-folder-btn');
@@ -62,26 +63,6 @@ editor.addEventListener('input', () => {
     }
 });
 
-// Function to load file content
-async function loadFileContent(filename) {
-    try {
-        const content = await window.api.loadFile(filename);
-        originalContent = content;
-        editor.value = content;
-        currentFile = filename;
-        
-        // Reset editing state
-        isEditing = false;
-        saveBtn.classList.remove('visible');
-        saveBtn.classList.add('hidden');
-        
-        return true;
-    } catch (error) {
-        showNotification('Error loading file: ' + filename, 'error');
-        return false;
-    }
-}
-
 // New file functionality
 const newFileBtn = document.getElementById('new-file-btn');
 const newFileModal = document.getElementById('new-file-modal');
@@ -125,8 +106,11 @@ createFileBtn.addEventListener('click', async () => {
             return;
         }
         
-        console.log('Attempting to create file:', filename);
-        const result = await window.api.createNewFile(filename);
+        // Create the file in the selected folder or root if no folder is selected
+        const filePath = selectedFolderPath ? `${selectedFolderPath}/${filename}` : filename;
+        console.log('Attempting to create file:', filePath);
+        
+        const result = await window.api.createNewFile(filePath);
         console.log('Create file result:', result);
         
         if (result.success) {
@@ -141,26 +125,49 @@ createFileBtn.addEventListener('click', async () => {
             // Load the new file
             await loadFileContent(result.filename);
             
-            // Select the new file in the list
-            const fileItems = document.querySelectorAll('.file-item');
-            let fileFound = false;
-            fileItems.forEach(item => {
-                if (item.querySelector('span').textContent === result.filename) {
-                    if (selectedFile) {
-                        selectedFile.classList.remove('selected');
+            // Find and select the new file in the tree
+            const findAndSelectFile = (items, targetPath) => {
+                for (const item of items) {
+                    const itemContent = item.querySelector('.tree-item-content');
+                    // Get the filename from the path by taking the last part after the last slash
+                    const targetFilename = targetPath.split('/').pop();
+                    if (item.querySelector('.tree-item-name').textContent === targetFilename) {
+                        // Remove previous selection
+                        if (selectedFile) {
+                            selectedFile.classList.remove('selected');
+                        }
+                        itemContent.classList.add('selected');
+                        selectedFile = itemContent;
+                        
+                        // Expand parent folders
+                        let parent = item.parentElement;
+                        while (parent && parent.classList.contains('tree-children')) {
+                            parent.classList.remove('hidden');
+                            const arrow = parent.previousElementSibling.querySelector('.tree-arrow');
+                            if (arrow) {
+                                arrow.classList.add('rotated');
+                            }
+                            const folderIcon = parent.previousElementSibling.querySelector('.tree-icon');
+                            if (folderIcon) {
+                                folderIcon.className = 'fas fa-folder-open tree-icon';
+                            }
+                            parent = parent.parentElement.parentElement;
+                        }
+                        return true;
                     }
-                    item.classList.add('selected');
-                    selectedFile = item;
-                    fileFound = true;
+                    
+                    const children = item.querySelector('.tree-children');
+                    if (children && findAndSelectFile(children.children, targetPath)) {
+                        return true;
+                    }
                 }
-            });
+                return false;
+            };
             
-            if (fileFound) {
-                showNotification('New note created successfully!', 'success');
-            } else {
-                console.error('Created file not found in list');
-                showNotification('Note created but not found in list', 'error');
-            }
+            const treeItems = document.querySelectorAll('.tree-item');
+            findAndSelectFile(treeItems, result.filename);
+            
+            showNotification('New note created successfully!', 'success');
         } else {
             console.error('Failed to create file:', result.error);
             showNotification(result.error || 'Failed to create new note', 'error');
@@ -180,51 +187,116 @@ newFileNameInput.addEventListener('keyup', (event) => {
     }
 });
 
+// Helper function to create folder tree item
+function createFolderTreeItem(item, level = 0) {
+  const treeItem = document.createElement('div');
+  treeItem.className = 'tree-item';
+  treeItem.style.paddingLeft = `${level * 20}px`;
+
+  const itemContent = document.createElement('div');
+  itemContent.className = 'tree-item-content';
+
+  // Create icon
+  const icon = document.createElement('i');
+  icon.className = item.type === 'directory' 
+    ? 'fas fa-folder tree-icon' 
+    : 'fas fa-file-alt tree-icon';
+
+  // Create item name span
+  const itemName = document.createElement('span');
+  itemName.textContent = item.name;
+  itemName.className = 'tree-item-name';
+
+  // Add expand/collapse arrow for directories
+  if (item.type === 'directory') {
+    const arrow = document.createElement('i');
+    arrow.className = 'fas fa-chevron-right tree-arrow';
+    itemContent.appendChild(arrow);
+
+    const children = document.createElement('div');
+    children.className = 'tree-children hidden';
+
+    // Add click handler for directories
+    itemContent.onclick = (e) => {
+      e.stopPropagation();
+      arrow.classList.toggle('rotated');
+      children.classList.toggle('hidden');
+      icon.className = children.classList.contains('hidden') 
+        ? 'fas fa-folder tree-icon'
+        : 'fas fa-folder-open tree-icon';
+      
+      // Update selected folder path when clicking on a directory
+      selectedFolderPath = item.path;
+    };
+
+    // Create child items
+    item.children.forEach(child => {
+      children.appendChild(createFolderTreeItem(child, level + 1));
+    });
+
+    treeItem.appendChild(itemContent);
+    treeItem.appendChild(children);
+  } else {
+    // Add click handler for files
+    itemContent.onclick = async () => {
+      // Check if there are unsaved changes
+      if (isEditing) {
+        const confirmSwitch = confirm('You have unsaved changes. Do you want to switch files without saving?');
+        if (!confirmSwitch) {
+          return;
+        }
+      }
+
+      // Remove selected class from previous selection
+      if (selectedFile) {
+        selectedFile.classList.remove('selected');
+      }
+
+      // Add selected class to current item
+      itemContent.classList.add('selected');
+      selectedFile = itemContent;
+
+      // Load the file content
+      await loadFileContent(item.path);
+    };
+
+    treeItem.appendChild(itemContent);
+  }
+
+  itemContent.appendChild(icon);
+  itemContent.appendChild(itemName);
+
+  return treeItem;
+}
+
 // Helper function to update file list
 function updateFileList(files) {
-    const list = document.getElementById('files-container');
-    list.innerHTML = '';
+  const list = document.getElementById('files-container');
+  list.innerHTML = '';
+  
+  files.forEach(item => {
+    list.appendChild(createFolderTreeItem(item));
+  });
+}
+
+// Function to load file content
+async function loadFileContent(filePath) {
+  try {
+    const content = await window.api.loadFileByPath(filePath);
+    originalContent = content;
+    editor.value = content;
+    currentFile = filePath;
     
-    files.forEach(f => {
-        const item = document.createElement('div');
-        item.className = 'file-item';
-        
-        // Create icon
-        const icon = document.createElement('i');
-        icon.className = 'file-icon fas fa-file-alt';
-        
-        // Create file name span
-        const fileName = document.createElement('span');
-        fileName.textContent = f;
-        
-        // Append icon and filename to item
-        item.appendChild(icon);
-        item.appendChild(fileName);
-        
-        item.onclick = async () => {
-            // Check if there are unsaved changes
-            if (isEditing) {
-                const confirmSwitch = confirm('You have unsaved changes. Do you want to switch files without saving?');
-                if (!confirmSwitch) {
-                    return;
-                }
-            }
-            
-            // Remove selected class from previous selection
-            if (selectedFile) {
-                selectedFile.classList.remove('selected');
-            }
-            
-            // Add selected class to current item
-            item.classList.add('selected');
-            selectedFile = item;
-            
-            // Load the file content
-            await loadFileContent(f);
-        };
-        
-        list.appendChild(item);
-    });
+    // Reset editing state
+    isEditing = false;
+    saveBtn.classList.remove('visible');
+    saveBtn.classList.add('hidden');
+    
+    return true;
+  } catch (error) {
+    showNotification('Error loading file: ' + filePath, 'error');
+    return false;
+  }
 }
 
 // Update the folder selected handler
