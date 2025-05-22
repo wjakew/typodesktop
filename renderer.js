@@ -482,6 +482,26 @@ const chatInput = document.getElementById('chat-input');
 const sendChatBtn = document.getElementById('send-chat');
 let isChatOpen = false;
 
+// Add resize observer for chat container
+const resizeObserver = new ResizeObserver(entries => {
+  for (const entry of entries) {
+    const width = entry.contentRect.width;
+    document.documentElement.style.setProperty('--chat-width', `${width}px`);
+    // Store the width in localStorage for persistence
+    localStorage.setItem('chat-width', width);
+  }
+});
+
+// Start observing the chat container
+resizeObserver.observe(chatContainer);
+
+// Restore previous chat width if it exists
+const savedWidth = localStorage.getItem('chat-width');
+if (savedWidth) {
+  chatContainer.style.width = `${savedWidth}px`;
+  document.documentElement.style.setProperty('--chat-width', `${savedWidth}px`);
+}
+
 // Load Ollama settings
 async function loadOllamaSettings() {
   const settings = await window.api.getOllamaSettings();
