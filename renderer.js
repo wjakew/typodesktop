@@ -53,7 +53,6 @@ themeToggle.addEventListener('click', toggleTheme);
 
 // Save button functionality
 const saveBtn = document.getElementById('save-btn');
-const saveBtnText = document.getElementById('save-btn-text');
 const editor = document.getElementById('editor');
 let currentFile = null;
 
@@ -64,13 +63,30 @@ editor.addEventListener('input', () => {
     const hasChanges = editor.value !== originalContent;
     if (hasChanges && !isEditing) {
         isEditing = true;
-        saveBtn.classList.remove('hidden');
-        saveBtn.classList.add('visible');
-        saveBtnText.textContent = 'Update';
+        saveBtn.classList.add('has-changes');
+        showNotification('Changes detected', 'info');
     } else if (!hasChanges && isEditing) {
         isEditing = false;
-        saveBtn.classList.remove('visible');
-        saveBtn.classList.add('hidden');
+        saveBtn.classList.remove('has-changes');
+    }
+});
+
+// Add save button click handler
+saveBtn.addEventListener('click', async () => {
+    if (!currentFile) {
+        showNotification('Please select a note first', 'info');
+        return;
+    }
+    
+    try {
+        await window.api.saveFile(currentFile, editor.value);
+        originalContent = editor.value;
+        isEditing = false;
+        saveBtn.classList.remove('has-changes');
+        showNotification('Changes saved successfully!', 'success');
+    } catch (error) {
+        console.error('Error saving file:', error);
+        showNotification('Error saving changes', 'error');
     }
 });
 
@@ -298,6 +314,7 @@ async function loadFileContent(filePath) {
     editor.value = content;
     originalContent = content;
     updatePreview();  // Update preview when loading new file
+    currentFile = filePath;
     
     // Remove previous selection
     if (selectedFile) {
@@ -309,8 +326,7 @@ async function loadFileContent(filePath) {
     
     // Reset editing state
     isEditing = false;
-    saveBtn.classList.remove('visible');
-    saveBtn.classList.add('hidden');
+    saveBtn.classList.remove('has-changes');
     
   } catch (error) {
     console.error('Error loading file:', error);
@@ -326,26 +342,6 @@ window.api.onFolderSelected(async (folder) => {
         updateFileList(files);
     } catch (error) {
         showNotification('Error loading files', 'error');
-    }
-});
-
-// Save functionality
-saveBtn.addEventListener('click', async () => {
-    if (!currentFile) {
-        showNotification('Please select a file first', 'error');
-        return;
-    }
-    
-    try {
-        const newContent = editor.value;
-        await window.api.saveFile(currentFile, newContent);
-        originalContent = newContent;
-        isEditing = false;
-        saveBtn.classList.remove('visible');
-        saveBtn.classList.add('hidden');
-        showNotification('File updated successfully!', 'success');
-    } catch (error) {
-        showNotification('Error saving file', 'error');
     }
 });
 
@@ -434,10 +430,18 @@ previewToggle.addEventListener('click', () => {
     isPreviewVisible = !isPreviewVisible;
     previewContainer.classList.toggle('hidden');
     editorWrapper.classList.toggle('split');
-    previewToggle.querySelector('i').classList.toggle('fa-eye-slash');
     
+    // Toggle eye icon
+    const eyeIcon = previewToggle.querySelector('i');
+    eyeIcon.classList.toggle('fa-eye');
+    eyeIcon.classList.toggle('fa-eye-slash');
+    
+    // Update preview if becoming visible
     if (isPreviewVisible) {
       updatePreview();
+      showNotification('Preview mode enabled', 'info');
+    } else {
+      showNotification('Preview mode disabled', 'info');
     }
   } catch (error) {
     console.error('Error toggling preview:', error);
@@ -455,13 +459,11 @@ editor.addEventListener('input', () => {
   const hasChanges = editor.value !== originalContent;
   if (hasChanges && !isEditing) {
     isEditing = true;
-    saveBtn.classList.remove('hidden');
-    saveBtn.classList.add('visible');
-    saveBtnText.textContent = 'Update';
+    saveBtn.classList.add('has-changes');
+    showNotification('Changes detected', 'info');
   } else if (!hasChanges && isEditing) {
     isEditing = false;
-    saveBtn.classList.remove('visible');
-    saveBtn.classList.add('hidden');
+    saveBtn.classList.remove('has-changes');
   }
 });
 
@@ -614,6 +616,13 @@ chatInput.addEventListener('keydown', (e) => {
 });
 
 sendChatBtn.addEventListener('click', sendChatMessage);
+
+// Clear chat functionality
+const clearChatBtn = document.getElementById('clear-chat');
+clearChatBtn.addEventListener('click', () => {
+  chatMessages.innerHTML = '';
+  showNotification('Chat history cleared', 'success');
+});
 
 // Handle streaming response
 let currentResponseDiv = null;

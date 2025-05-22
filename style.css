@@ -14,6 +14,7 @@
     --selected-bg: #e9d8fd;
     --selected-color: #7b2cbf;
     --shadow-color: rgba(0,0,0,0.05);
+    --code-bg: #2d2d2d;
 }
 
 [data-theme="dark"] {
@@ -32,6 +33,7 @@
     --selected-bg: #4c1d95;
     --selected-color: #ffffff;
     --shadow-color: rgba(0,0,0,0.2);
+    --code-bg: #1a1a1a;
 }
 
 body { 
@@ -141,11 +143,74 @@ body {
 }
 
 .editor-wrapper {
-  display: flex;
   flex: 1;
   position: relative;
-  height: 100%;
   overflow: hidden;
+  display: flex;
+}
+
+.editor-wrapper.split {
+  flex-direction: row;
+}
+
+.editor-actions {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  gap: 10px;
+  z-index: 100;
+}
+
+.editor-actions button {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.editor-actions button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  background-color: var(--accent-hover);
+}
+
+/* Save button styles */
+#save-btn {
+  transition: all 0.3s ease;
+}
+
+#save-btn:not(:hover) {
+  opacity: 0.7;
+}
+
+#save-btn.has-changes {
+  opacity: 1;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Adjust chat toggle position when chat is open */
+.editor-container.with-chat .editor-actions {
+  right: calc(var(--chat-width, 300px) + 20px);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 #editor {
@@ -163,41 +228,8 @@ body {
   color: var(--text-primary);
 }
 
-#save-btn { 
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    padding: 12px 24px;
-    background-color: var(--accent-color);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 2px 8px var(--shadow-color);
-    opacity: 0;
-    transform: translateY(20px);
-}
-
-#save-btn.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-#save-btn.hidden {
-    opacity: 0;
-    transform: translateY(20px);
-    pointer-events: none;
-}
-
-#save-btn:hover {
-    background-color: var(--accent-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px var(--shadow-color);
+.editor-wrapper.split #editor {
+  width: 50%;
 }
 
 .file-list-header {
@@ -441,6 +473,7 @@ body {
   color: var(--text-primary);
   border-left: 1px solid var(--border-color);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  width: 50%;
 }
 
 .markdown-preview.hidden {
@@ -649,6 +682,19 @@ body {
 }
 
 #send-chat:hover {
+  opacity: 0.9;
+}
+
+#clear-chat {
+  padding: 8px 12px;
+  background: #dc3545;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+}
+
+#clear-chat:hover {
   opacity: 0.9;
 }
 

@@ -1,5 +1,16 @@
 const { contextBridge, ipcRenderer } = require('electron');
-const marked = require('marked');
+const { marked } = require('marked');
+
+// Configure marked
+marked.use({
+  gfm: true, // GitHub Flavored Markdown
+  breaks: true, // Convert line breaks to <br>
+  mangle: false, // Don't escape HTML
+  headerIds: true, // Add IDs to headers
+  headerPrefix: '', // No prefix for header IDs
+  smartypants: true, // Use smart punctuation
+  xhtml: true // Use XHTML style tags
+});
 
 // Create the API object
 const api = {
@@ -15,7 +26,7 @@ const api = {
   maximizeWindow: () => ipcRenderer.invoke('window-maximize'),
   closeWindow: () => ipcRenderer.invoke('window-close'),
   // Markdown rendering
-  marked: (text) => marked.parse(text),
+  marked: (text) => marked.parse(text, { async: false }),
   // Ollama Settings
   saveOllamaSettings: (settings) => ipcRenderer.invoke('save-ollama-settings', settings),
   getOllamaSettings: () => ipcRenderer.invoke('get-ollama-settings'),

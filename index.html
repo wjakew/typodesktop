@@ -35,6 +35,9 @@
       <button id="change-folder-btn" class="action-btn icon-only" title="Change Folder">
         <i class="fas fa-folder-open"></i>
       </button>
+      <button id="save-btn" class="action-btn icon-only" title="Save Changes">
+        <i class="fas fa-save"></i>
+      </button>
       <button id="new-file-btn" class="action-btn">
         <i class="fas fa-plus"></i>
         <span>New Note</span>
@@ -57,13 +60,11 @@
         <textarea id="editor"></textarea>
         <div id="preview" class="markdown-preview hidden"></div>
       </div>
-      <button id="save-btn" class="hidden">
-        <i class="fas fa-save"></i>
-        <span id="save-btn-text">Save</span>
-      </button>
-      <button id="chat-toggle" class="action-btn icon-only" title="Toggle Chat">
-        <i class="fas fa-comments"></i>
-      </button>
+      <div class="editor-actions">
+        <button id="chat-toggle" class="action-btn icon-only" title="Toggle Chat">
+          <i class="fas fa-comments"></i>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -91,6 +92,9 @@
     <div id="chat-messages"></div>
     <div class="chat-input-container">
       <textarea id="chat-input" placeholder="Type your message..."></textarea>
+      <button id="clear-chat" class="action-btn" title="Clear chat history">
+        <i class="fas fa-trash"></i>
+      </button>
       <button id="send-chat" class="action-btn">
         <i class="fas fa-paper-plane"></i>
       </button>
