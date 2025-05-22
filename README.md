@@ -1,6 +1,8 @@
-# Typo Desktop
+# Typo
 
-A lightweight desktop Markdown editor built with Electron. This application allows you to manage and edit Markdown files in a selected directory with a clean and intuitive interface.
+typo is a lightweight, local-first application designed to help you build and manage a personalized knowledge base. With full integration of Ollama—which you can host locally—it ensures your data remains entirely private and secure.
+
+Typo provides a clean, intuitive interface for browsing, editing, and organizing Markdown files within a chosen directory. Whether you’re documenting projects, taking notes, or curating research, Typo offers a seamless experience tailored for productivity and privacy.
 
 ## Features
 
@@ -10,6 +12,7 @@ A lightweight desktop Markdown editor built with Electron. This application allo
 - 🔍 Easy file navigation
 - 🎨 Clean and intuitive user interface
 - 🚀 Fast and lightweight
+- 🤖 AI-powered assistance with Ollama integration
 
 ## Installation
 
@@ -19,6 +22,10 @@ A lightweight desktop Markdown editor built with Electron. This application allo
 ```bash
 npm install
 ```
+
+or
+
+Download newest release from release page.
 
 ## Development
 
@@ -55,6 +62,14 @@ You can open the Developer Tools by pressing `Ctrl+I` (or `Cmd+I` on macOS) whil
 - Real-time preview (if implemented)
 - Responsive design
 
+### AI Integration
+- Built-in AI assistant powered by Ollama
+- Context-aware responses based on your notes
+- Customizable AI model selection
+- Configurable Ollama server settings
+- Real-time streaming responses
+- Chat history support for contextual conversations
+
 ## Technical Details
 
 The application uses:
@@ -62,6 +77,8 @@ The application uses:
 - Node.js for backend operations
 - Native file system integration
 - IPC (Inter-Process Communication) for secure file operations
+- Ollama API integration for AI capabilities
+- Streaming response handling for real-time AI interactions
 
 ## Security
 

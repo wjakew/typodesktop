@@ -818,6 +818,12 @@ ${messages.map(m => `${m.role}: ${m.content}`).join('\n')}`;
 }
 
 createNoteFromChatBtn.addEventListener('click', async () => {
+  const chatMessages = document.getElementById('chat-messages');
+  if (!chatMessages.children.length) {
+    showNotification('Cannot create note: Chat history is empty', 'error');
+    return;
+  }
+  
   createNoteModal.classList.remove('hidden');
   noteTitleInput.value = '';
   await generateNoteFromChat();
