@@ -15,7 +15,19 @@ const api = {
   maximizeWindow: () => ipcRenderer.invoke('window-maximize'),
   closeWindow: () => ipcRenderer.invoke('window-close'),
   // Markdown rendering
-  marked: (text) => marked.parse(text)
+  marked: (text) => marked.parse(text),
+  // Ollama Settings
+  saveOllamaSettings: (settings) => ipcRenderer.invoke('save-ollama-settings', settings),
+  getOllamaSettings: () => ipcRenderer.invoke('get-ollama-settings'),
+  // Chat
+  sendChatMessage: (message) => ipcRenderer.invoke('send-chat-message', message),
+  // Subscribe to streaming response
+  onChatResponse: (callback) => {
+    ipcRenderer.on('chat-response', callback);
+    return () => {
+      ipcRenderer.removeListener('chat-response', callback);
+    };
+  }
 };
 
 // Expose the API to the renderer process

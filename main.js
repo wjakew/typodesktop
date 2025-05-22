@@ -1,6 +1,8 @@
 const { app, BrowserWindow, dialog, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const https = require('https');
+const http = require('http');
 
 let folderPath = null;
 let mainWindow = null;
@@ -242,4 +244,161 @@ ipcMain.handle('window-maximize', () => {
 
 ipcMain.handle('window-close', () => {
   mainWindow.close();
+});
+
+// Ollama settings storage
+function getOllamaSettingsPath() {
+  const userDataPath = app.getPath('userData');
+  return path.join(userDataPath, 'ollama-settings.json');
+}
+
+function loadOllamaSettings() {
+  const settingsPath = getOllamaSettingsPath();
+  try {
+    if (fs.existsSync(settingsPath)) {
+      return JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    }
+  } catch (error) {
+    console.error('Error loading Ollama settings:', error);
+  }
+  return {
+    url: 'http://localhost:11434',
+    model: 'llama2'
+  };
+}
+
+function saveOllamaSettings(settings) {
+  const settingsPath = getOllamaSettingsPath();
+  try {
+    fs.writeFileSync(settingsPath, JSON.stringify(settings));
+    return true;
+  } catch (error) {
+    console.error('Error saving Ollama settings:', error);
+    return false;
+  }
+}
+
+// Ollama API integration
+async function streamOllamaResponse(settings, prompt, currentContent, callback) {
+  const requestData = {
+    model: settings.model,
+    prompt: prompt,
+    stream: true
+  };
+
+  const requestOptions = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+
+  const protocol = settings.url.startsWith('https') ? https : http;
+  const req = protocol.request(settings.url + '/api/generate', requestOptions, (res) => {
+    let buffer = '';
+
+    // Check for HTTP error status codes
+    if (res.statusCode !== 200) {
+      callback({
+        type: 'error',
+        error: `Ollama API error (${res.statusCode}): ${res.statusMessage}`
+      });
+      return;
+    }
+
+    res.on('data', (chunk) => {
+      buffer += chunk.toString();
+      
+      // Process complete JSON objects from the stream
+      while (true) {
+        const newlineIndex = buffer.indexOf('\n');
+        if (newlineIndex === -1) break;
+        
+        const line = buffer.slice(0, newlineIndex);
+        buffer = buffer.slice(newlineIndex + 1);
+        
+        try {
+          const response = JSON.parse(line);
+          if (response.error) {
+            callback({
+              type: 'error',
+              error: response.error
+            });
+            return;
+          }
+          callback({
+            type: 'stream',
+            content: response.response,
+            done: response.done
+          });
+        } catch (error) {
+          console.error('Error parsing Ollama response:', error);
+          callback({
+            type: 'error',
+            error: 'Failed to parse Ollama response'
+          });
+        }
+      }
+    });
+
+    res.on('end', () => {
+      if (buffer.length > 0) {
+        try {
+          const response = JSON.parse(buffer);
+          if (response.error) {
+            callback({
+              type: 'error',
+              error: response.error
+            });
+            return;
+          }
+        } catch (error) {
+          // Ignore parsing error on last chunk if it's incomplete
+        }
+      }
+      callback({
+        type: 'end'
+      });
+    });
+  });
+
+  req.on('error', (error) => {
+    console.error('Error in Ollama request:', error);
+    callback({
+      type: 'error',
+      error: `Connection error: ${error.message}`
+    });
+  });
+
+  try {
+    req.write(JSON.stringify(requestData));
+    req.end();
+  } catch (error) {
+    console.error('Error sending request to Ollama:', error);
+    callback({
+      type: 'error',
+      error: `Failed to send request: ${error.message}`
+    });
+  }
+}
+
+// Add IPC handlers for Ollama integration
+ipcMain.handle('save-ollama-settings', async (event, settings) => {
+  return saveOllamaSettings(settings);
+});
+
+ipcMain.handle('get-ollama-settings', async () => {
+  return loadOllamaSettings();
+});
+
+ipcMain.handle('send-chat-message', async (event, message) => {
+  const settings = loadOllamaSettings();
+  const currentContent = message.currentContent || '';
+  
+  streamOllamaResponse(settings, message.text, currentContent, (response) => {
+    if (!mainWindow) return;
+    mainWindow.webContents.send('chat-response', response);
+  });
+  
+  return true;
 });

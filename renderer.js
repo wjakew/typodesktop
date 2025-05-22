@@ -355,11 +355,15 @@ function showNotification(message, type = 'success') {
     notification.style.position = 'fixed';
     notification.style.bottom = '20px';
     notification.style.right = '20px';
-    notification.style.backgroundColor = type === 'success' ? '#40c057' : '#fa5252';
+    notification.style.backgroundColor = 
+      type === 'success' ? '#40c057' : 
+      type === 'error' ? '#fa5252' :
+      type === 'info' ? '#228be6' : '#40c057';
     notification.style.color = 'white';
     notification.style.padding = '10px 20px';
     notification.style.borderRadius = '6px';
     notification.style.animation = 'fadeInOut 2s forwards';
+    notification.style.zIndex = '9999';
     notification.textContent = message;
     
     document.body.appendChild(notification);
@@ -458,6 +462,203 @@ editor.addEventListener('input', () => {
     isEditing = false;
     saveBtn.classList.remove('visible');
     saveBtn.classList.add('hidden');
+  }
+});
+
+// Ollama Settings
+const ollamaSettingsBtn = document.getElementById('ollama-settings-btn');
+const ollamaSettingsModal = document.getElementById('ollama-settings-modal');
+const ollamaUrlInput = document.getElementById('ollama-url');
+const ollamaModelInput = document.getElementById('ollama-model');
+const saveOllamaSettingsBtn = document.getElementById('save-ollama-settings');
+const cancelOllamaSettingsBtn = document.getElementById('cancel-ollama-settings');
+
+// Chat Interface
+const chatContainer = document.getElementById('chat-container');
+const chatMessages = document.getElementById('chat-messages');
+const chatInput = document.getElementById('chat-input');
+const sendChatBtn = document.getElementById('send-chat');
+let isChatOpen = false;
+
+// Load Ollama settings
+async function loadOllamaSettings() {
+  const settings = await window.api.getOllamaSettings();
+  ollamaUrlInput.value = settings.url;
+  ollamaModelInput.value = settings.model;
+}
+
+// Show Ollama settings modal
+ollamaSettingsBtn.addEventListener('click', () => {
+  loadOllamaSettings();
+  ollamaSettingsModal.classList.remove('hidden');
+});
+
+// Save Ollama settings
+saveOllamaSettingsBtn.addEventListener('click', async () => {
+  const settings = {
+    url: ollamaUrlInput.value.trim(),
+    model: ollamaModelInput.value.trim()
+  };
+  
+  if (!settings.url || !settings.model) {
+    showNotification('Please fill in all fields', 'error');
+    return;
+  }
+  
+  const success = await window.api.saveOllamaSettings(settings);
+  if (success) {
+    ollamaSettingsModal.classList.add('hidden');
+    showNotification('Settings saved successfully!', 'success');
+  } else {
+    showNotification('Failed to save settings', 'error');
+  }
+});
+
+// Cancel Ollama settings
+cancelOllamaSettingsBtn.addEventListener('click', () => {
+  ollamaSettingsModal.classList.add('hidden');
+});
+
+// Toggle chat interface
+ollamaSettingsBtn.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  toggleChat();
+});
+
+function toggleChat() {
+  isChatOpen = !isChatOpen;
+  chatContainer.classList.toggle('hidden');
+  document.querySelector('.editor-container').classList.toggle('with-chat');
+  
+  if (isChatOpen) {
+    chatInput.focus();
+  }
+}
+
+// Handle chat messages
+function addChatMessage(message, isUser = true) {
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `chat-message ${isUser ? 'user' : 'assistant'}`;
+  messageDiv.textContent = message;
+  chatMessages.appendChild(messageDiv);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Send chat message
+async function sendChatMessage() {
+  const message = chatInput.value.trim();
+  if (!message) return;
+  
+  try {
+    // Check if we have Ollama settings
+    const settings = await window.api.getOllamaSettings();
+    if (!settings || !settings.url || !settings.model) {
+      showNotification('Please configure Ollama settings first', 'error');
+      return;
+    }
+
+    // Add user message to chat
+    addChatMessage(message, true);
+    
+    // Clear input
+    chatInput.value = '';
+    
+    // Get current note content
+    const currentContent = editor.value;
+    
+    // Create loading message
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'chat-message assistant';
+    loadingDiv.innerHTML = '<span class="loading-dots"></span>';
+    chatMessages.appendChild(loadingDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    showNotification('Connecting to Ollama...', 'info');
+    
+    // Send message to Ollama
+    const result = await window.api.sendChatMessage({
+      text: message,
+      currentContent: currentContent
+    });
+
+    if (!result) {
+      throw new Error('Failed to send message to Ollama');
+    }
+  } catch (error) {
+    console.error('Error sending chat message:', error);
+    showNotification('Error: ' + (error.message || 'Failed to send message'), 'error');
+    
+    // Remove loading message if it exists
+    const loadingMessage = chatMessages.querySelector('.loading-dots')?.parentElement;
+    if (loadingMessage) {
+      loadingMessage.remove();
+    }
+
+    // Add error message to chat
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'chat-message assistant error';
+    errorDiv.textContent = '❌ Failed to get response from Ollama. Please check your settings and ensure Ollama is running.';
+    chatMessages.appendChild(errorDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+}
+
+// Handle chat input
+chatInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendChatMessage();
+  }
+});
+
+sendChatBtn.addEventListener('click', sendChatMessage);
+
+// Handle streaming response
+let currentResponseDiv = null;
+
+window.api.onChatResponse((event, response) => {
+  // Remove loading message if it exists
+  const loadingMessage = chatMessages.querySelector('.loading-dots')?.parentElement;
+  if (loadingMessage) {
+    loadingMessage.remove();
+  }
+  
+  if (response.type === 'stream') {
+    if (!currentResponseDiv) {
+      currentResponseDiv = document.createElement('div');
+      currentResponseDiv.className = 'chat-message assistant';
+      chatMessages.appendChild(currentResponseDiv);
+      showNotification('Receiving response from Ollama...', 'info');
+    }
+    
+    currentResponseDiv.textContent += response.content;
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    if (response.done) {
+      currentResponseDiv = null;
+      showNotification('Response completed', 'success');
+    }
+  } else if (response.type === 'error') {
+    showNotification('Ollama error: ' + response.error, 'error');
+    currentResponseDiv = null;
+
+    // Add error message to chat
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'chat-message assistant error';
+    errorDiv.textContent = '❌ ' + response.error;
+    chatMessages.appendChild(errorDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  } else if (response.type === 'end') {
+    if (!currentResponseDiv) {
+      showNotification('No response received from Ollama', 'error');
+      
+      // Add error message to chat
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'chat-message assistant error';
+      errorDiv.textContent = '❌ No response received. Please check if Ollama is running and the model is properly loaded.';
+      chatMessages.appendChild(errorDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
   }
 });
   
