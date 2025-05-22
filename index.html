@@ -6,15 +6,30 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-  <div id="top-bar">
-    <div class="top-bar-left">
-      <span class="app-name">typo</span>
+  <div id="titlebar">
+    <div class="titlebar-drag">
+      <div class="titlebar-left">
+        <span class="app-name">typo</span>
+      </div>
     </div>
+    <div class="titlebar-controls">
+      <button id="minimize-btn" class="titlebar-btn">
+        <i class="fas fa-minus"></i>
+      </button>
+      <button id="maximize-btn" class="titlebar-btn">
+        <i class="fas fa-expand"></i>
+      </button>
+      <button id="close-btn" class="titlebar-btn">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+  <div id="top-bar">
     <div class="top-bar-right">
-        <button id="new-file-btn" class="action-btn">
-            <i class="fas fa-plus"></i>
-            <span>New Note</span>
-            </button>
+      <button id="new-file-btn" class="action-btn">
+        <i class="fas fa-plus"></i>
+        <span>New Note</span>
+      </button>
       <button id="theme-toggle">
         <i class="fas fa-moon"></i>
       </button>

@@ -1,12 +1,15 @@
 :root {
+    --bg-color: #f8f9fa;
     --bg-primary: #f8f9fa;
     --bg-secondary: #ffffff;
     --border-color: #e9ecef;
+    --text-color: #495057;
     --text-primary: #495057;
     --text-secondary: #343a40;
     --accent-color: #228be6;
     --accent-hover: #1c7ed6;
     --icon-color: #adb5bd;
+    --hover-color: #f1f3f5;
     --hover-bg: #f1f3f5;
     --selected-bg: #e7f5ff;
     --selected-color: #228be6;
@@ -14,14 +17,17 @@
 }
 
 [data-theme="dark"] {
+    --bg-color: #1e1e1e;
     --bg-primary: #1e1e1e;
     --bg-secondary: #252526;
     --border-color: #333333;
+    --text-color: #d4d4d4;
     --text-primary: #d4d4d4;
     --text-secondary: #ffffff;
     --accent-color: #0098ff;
     --accent-hover: #0082d9;
     --icon-color: #858585;
+    --hover-color: #2a2d2e;
     --hover-bg: #2a2d2e;
     --selected-bg: #094771;
     --selected-color: #ffffff;
@@ -39,13 +45,13 @@ body {
 }
 
 #top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background-color: var(--bg-secondary);
+    height: 48px;
+    padding: 0 16px;
+    background: var(--bg-color);
     border-bottom: 1px solid var(--border-color);
-    box-shadow: 0 1px 3px var(--shadow-color);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
 }
 
 .top-bar-left, .top-bar-right {
@@ -69,6 +75,7 @@ body {
 }
 
 .main-content {
+    height: calc(100vh - 80px);
     display: flex;
     flex: 1;
     overflow: hidden;
@@ -283,4 +290,55 @@ body {
   font-size: 1.2em;
   margin-right: 15px;
   font-weight: bold;
+  color: var(--text-color);
+}
+
+#titlebar {
+  height: 32px;
+  background: var(--bg-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  -webkit-app-region: drag;
+  border-bottom: 1px solid var(--border-color);
+  user-select: none;
+}
+
+.titlebar-drag {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.titlebar-left {
+  padding-left: 12px;
+}
+
+.titlebar-controls {
+  display: flex;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar-btn {
+  width: 46px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+  transition: background-color 0.2s ease;
+}
+
+.titlebar-btn:hover {
+  background: var(--hover-color);
+}
+
+#close-btn:hover {
+  background: #e81123;
+  color: white;
 }

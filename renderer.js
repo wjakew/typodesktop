@@ -103,7 +103,7 @@ createFileBtn.addEventListener('click', async () => {
         }
         
         console.log('Attempting to create file:', filename);
-        const result = await window.api.createFile(filename);
+        const result = await window.api.createNewFile(filename);
         console.log('Create file result:', result);
         
         if (result.success) {
@@ -263,4 +263,31 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Window control event listeners
+const minimizeBtn = document.getElementById('minimize-btn');
+const maximizeBtn = document.getElementById('maximize-btn');
+const closeBtn = document.getElementById('close-btn');
+const maximizeIcon = maximizeBtn.querySelector('i');
+
+minimizeBtn.addEventListener('click', () => {
+    window.api.minimizeWindow();
+});
+
+maximizeBtn.addEventListener('click', () => {
+    maximizeIcon.classList.toggle('fa-expand');
+    maximizeIcon.classList.toggle('fa-compress');
+    window.api.maximizeWindow();
+});
+
+closeBtn.addEventListener('click', () => {
+    window.api.closeWindow();
+});
+
+// Add double-click handler for titlebar to toggle maximize
+document.querySelector('.titlebar-drag').addEventListener('dblclick', () => {
+    maximizeIcon.classList.toggle('fa-expand');
+    maximizeIcon.classList.toggle('fa-compress');
+    window.api.maximizeWindow();
+});
   

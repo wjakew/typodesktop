@@ -9,6 +9,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1000,
     height: 700,
+    frame: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -131,4 +132,21 @@ ipcMain.handle('create-new-file', (event, filename) => {
     console.error('Error creating new file:', error);
     return { success: false, error: error.message };
   }
+});
+
+// Add window control handlers
+ipcMain.handle('window-minimize', () => {
+  mainWindow.minimize();
+});
+
+ipcMain.handle('window-maximize', () => {
+  if (mainWindow.isMaximized()) {
+    mainWindow.unmaximize();
+  } else {
+    mainWindow.maximize();
+  }
+});
+
+ipcMain.handle('window-close', () => {
+  mainWindow.close();
 });
