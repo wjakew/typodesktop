@@ -206,6 +206,13 @@ body {
     font-size: 14px;
 }
 
+.action-btn.icon-only {
+    padding: 8px;
+    width: 36px;
+    height: 36px;
+    justify-content: center;
+}
+
 .action-btn:hover {
     background-color: var(--accent-hover);
     transform: translateY(-1px);

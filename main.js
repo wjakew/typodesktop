@@ -5,6 +5,31 @@ const fs = require('fs');
 let folderPath = null;
 let mainWindow = null;
 
+// Add folder persistence
+function getStoredFolderPath() {
+  const userDataPath = app.getPath('userData');
+  const configPath = path.join(userDataPath, 'config.json');
+  try {
+    if (fs.existsSync(configPath)) {
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      return config.lastFolder;
+    }
+  } catch (error) {
+    console.error('Error reading stored folder path:', error);
+  }
+  return null;
+}
+
+function saveStoredFolderPath(folderPath) {
+  const userDataPath = app.getPath('userData');
+  const configPath = path.join(userDataPath, 'config.json');
+  try {
+    fs.writeFileSync(configPath, JSON.stringify({ lastFolder: folderPath }));
+  } catch (error) {
+    console.error('Error saving folder path:', error);
+  }
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1000,
@@ -36,6 +61,7 @@ function showFolderDialog() {
   }).then(result => {
     if (!result.canceled) {
       folderPath = result.filePaths[0];
+      saveStoredFolderPath(folderPath);
       mainWindow.webContents.send('folder-selected', folderPath);
     }
   });
@@ -43,7 +69,16 @@ function showFolderDialog() {
 
 app.whenReady().then(() => {
   createWindow();
-  showFolderDialog();
+  
+  // Try to load stored folder path first
+  folderPath = getStoredFolderPath();
+  if (folderPath && fs.existsSync(folderPath)) {
+    mainWindow.webContents.on('did-finish-load', () => {
+      mainWindow.webContents.send('folder-selected', folderPath);
+    });
+  } else {
+    showFolderDialog();
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

@@ -1,12 +1,35 @@
 let selectedFile = null;
-let isDarkMode = false;
+let isDarkMode = true;
 let isEditing = false;
 let originalContent = '';
 let folderPath = null;
 
+// Change folder button functionality
+const changeFolderBtn = document.getElementById('change-folder-btn');
+changeFolderBtn.addEventListener('click', async () => {
+    // Check if there are unsaved changes
+    if (isEditing) {
+        const confirmSwitch = confirm('You have unsaved changes. Do you want to change folders without saving?');
+        if (!confirmSwitch) {
+            return;
+        }
+    }
+    
+    try {
+        await window.api.showFolderDialog();
+        // The folder-selected event handler will handle the rest
+    } catch (error) {
+        showNotification('Error changing folder', 'error');
+    }
+});
+
 // Theme toggle functionality
 const themeToggle = document.getElementById('theme-toggle');
 const themeIcon = themeToggle.querySelector('i');
+
+// Set initial theme state
+document.documentElement.setAttribute('data-theme', 'dark');
+themeIcon.className = 'fas fa-sun';
 
 function toggleTheme() {
     isDarkMode = !isDarkMode;
