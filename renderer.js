@@ -528,9 +528,11 @@ ollamaSettingsBtn.addEventListener('contextmenu', (e) => {
 function toggleChat() {
   isChatOpen = !isChatOpen;
   chatContainer.classList.toggle('hidden');
-  document.querySelector('.editor-container').classList.toggle('with-chat');
+  editorContainer.classList.toggle('with-chat');
   
   if (isChatOpen) {
+    const width = chatContainer.offsetWidth;
+    document.documentElement.style.setProperty('--chat-width', `${width}px`);
     chatInput.focus();
   }
 }
@@ -615,6 +617,7 @@ sendChatBtn.addEventListener('click', sendChatMessage);
 
 // Handle streaming response
 let currentResponseDiv = null;
+let currentResponseText = '';
 
 window.api.onChatResponse((event, response) => {
   // Remove loading message if it exists
@@ -626,21 +629,25 @@ window.api.onChatResponse((event, response) => {
   if (response.type === 'stream') {
     if (!currentResponseDiv) {
       currentResponseDiv = document.createElement('div');
-      currentResponseDiv.className = 'chat-message assistant';
+      currentResponseDiv.className = 'chat-message assistant markdown-content';
       chatMessages.appendChild(currentResponseDiv);
+      currentResponseText = '';
       showNotification('Receiving response from Ollama...', 'info');
     }
     
-    currentResponseDiv.textContent += response.content;
+    currentResponseText += response.content;
+    currentResponseDiv.innerHTML = window.api.marked(currentResponseText);
     chatMessages.scrollTop = chatMessages.scrollHeight;
     
     if (response.done) {
       currentResponseDiv = null;
+      currentResponseText = '';
       showNotification('Response completed', 'success');
     }
   } else if (response.type === 'error') {
     showNotification('Ollama error: ' + response.error, 'error');
     currentResponseDiv = null;
+    currentResponseText = '';
 
     // Add error message to chat
     const errorDiv = document.createElement('div');
@@ -667,4 +674,18 @@ const chatToggleBtn = document.getElementById('chat-toggle');
 chatToggleBtn.addEventListener('click', () => {
   toggleChat();
 });
+
+// Add chat resize observer
+const editorContainer = document.querySelector('.editor-container');
+
+if (chatContainer && editorContainer) {
+    const resizeObserver = new ResizeObserver(entries => {
+        for (let entry of entries) {
+            const width = entry.contentRect.width;
+            document.documentElement.style.setProperty('--chat-width', `${width}px`);
+        }
+    });
+
+    resizeObserver.observe(chatContainer);
+}
   
