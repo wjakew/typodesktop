@@ -1030,4 +1030,220 @@ createNoteModal.addEventListener('click', (e) => {
     createNoteModal.classList.add('hidden');
   }
 });
+
+// Floating Assistant
+const floatingAssistant = document.getElementById('floating-assistant');
+const floatingAssistantToggle = document.getElementById('floating-assistant-toggle');
+const minimizeAssistantBtn = document.getElementById('minimize-assistant-btn');
+const closeAssistantBtn = document.getElementById('close-assistant-btn');
+const floatingChatInput = document.getElementById('floating-chat-input');
+const floatingChatMessages = document.getElementById('floating-chat-messages');
+const floatingSendChat = document.getElementById('floating-send-chat');
+
+let isFloatingAssistantVisible = false;
+let isFloatingAssistantMinimized = false;
+
+// Toggle floating assistant
+floatingAssistantToggle.addEventListener('click', () => {
+  isFloatingAssistantVisible = !isFloatingAssistantVisible;
+  floatingAssistant.classList.toggle('hidden', !isFloatingAssistantVisible);
+  if (isFloatingAssistantVisible) {
+    floatingChatInput.focus();
+  }
+});
+
+// Minimize floating assistant
+minimizeAssistantBtn.addEventListener('click', () => {
+  isFloatingAssistantMinimized = !isFloatingAssistantMinimized;
+  floatingAssistant.classList.toggle('minimized', isFloatingAssistantMinimized);
+  minimizeAssistantBtn.querySelector('i').classList.toggle('fa-minus');
+  minimizeAssistantBtn.querySelector('i').classList.toggle('fa-expand');
+});
+
+// Close floating assistant
+closeAssistantBtn.addEventListener('click', () => {
+  isFloatingAssistantVisible = false;
+  floatingAssistant.classList.add('hidden');
+});
+
+// Make floating assistant draggable
+let isDragging = false;
+let currentX;
+let currentY;
+let initialX;
+let initialY;
+let xOffset = 0;
+let yOffset = 0;
+
+const dragStart = (e) => {
+  if (e.target.closest('.floating-dialog-header')) {
+    isDragging = true;
+    const rect = floatingAssistant.getBoundingClientRect();
+    
+    if (e.type === "mousedown") {
+      initialX = e.clientX - rect.left;
+      initialY = e.clientY - rect.top;
+    } else {
+      initialX = e.touches[0].clientX - rect.left;
+      initialY = e.touches[0].clientY - rect.top;
+    }
+  }
+};
+
+const dragEnd = () => {
+  isDragging = false;
+};
+
+const drag = (e) => {
+  if (isDragging) {
+    e.preventDefault();
+    
+    let clientX, clientY;
+    if (e.type === "mousemove") {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    } else {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    }
+    
+    const newX = clientX - initialX;
+    const newY = clientY - initialY;
+    
+    // Get window dimensions
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const dialogRect = floatingAssistant.getBoundingClientRect();
+    
+    // Keep dialog within window bounds
+    const maxX = windowWidth - dialogRect.width;
+    const maxY = windowHeight - dialogRect.height;
+    
+    const boundedX = Math.max(0, Math.min(newX, maxX));
+    const boundedY = Math.max(0, Math.min(newY, maxY));
+    
+    floatingAssistant.style.left = boundedX + 'px';
+    floatingAssistant.style.top = boundedY + 'px';
+    floatingAssistant.style.transform = 'none';
+  }
+};
+
+floatingAssistant.addEventListener('mousedown', dragStart);
+document.addEventListener('mousemove', drag);
+document.addEventListener('mouseup', dragEnd);
+
+floatingAssistant.addEventListener('touchstart', dragStart);
+document.addEventListener('touchmove', drag);
+document.addEventListener('touchend', dragEnd);
+
+// Send message from floating assistant
+const sendFloatingChatMessage = async () => {
+  const message = floatingChatInput.value.trim();
+  if (!message) return;
+
+  try {
+    // Check if we have Ollama settings
+    const settings = await window.api.getOllamaSettings();
+    if (!settings || !settings.url || !settings.model) {
+      showNotification('Please configure Ollama settings first', 'error');
+      return;
+    }
+
+    // Add user message to chat
+    const userMessageDiv = document.createElement('div');
+    userMessageDiv.className = 'chat-message user';
+    userMessageDiv.textContent = message;
+    floatingChatMessages.appendChild(userMessageDiv);
+    
+    // Clear input
+    floatingChatInput.value = '';
+    
+    // Create loading message
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'chat-message assistant';
+    loadingDiv.innerHTML = '<span class="loading-dots"></span>';
+    floatingChatMessages.appendChild(loadingDiv);
+    floatingChatMessages.scrollTop = floatingChatMessages.scrollHeight;
+    
+    showNotification('Connecting to Ollama...', 'info');
+    
+    // Send message to Ollama
+    const result = await window.api.sendChatMessage({
+      text: message,
+      currentContent: ''
+    });
+
+    if (!result) {
+      throw new Error('Failed to send message to Ollama');
+    }
+  } catch (error) {
+    console.error('Error sending chat message:', error);
+    showNotification('Error: ' + (error.message || 'Failed to send message'), 'error');
+    
+    // Remove loading message if it exists
+    const loadingMessage = floatingChatMessages.querySelector('.loading-dots')?.parentElement;
+    if (loadingMessage) {
+      loadingMessage.remove();
+    }
+
+    // Add error message to chat
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'chat-message assistant error';
+    errorDiv.textContent = '❌ Failed to get response from Ollama. Please check your settings and ensure Ollama is running.';
+    floatingChatMessages.appendChild(errorDiv);
+    floatingChatMessages.scrollTop = floatingChatMessages.scrollHeight;
+  }
+};
+
+floatingSendChat.addEventListener('click', sendFloatingChatMessage);
+
+floatingChatInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendFloatingChatMessage();
+  }
+});
+
+// Handle streaming response for floating assistant
+let floatingCurrentResponseDiv = null;
+let floatingCurrentResponseText = '';
+
+window.api.onChatResponse((event, response) => {
+  // Remove loading message if it exists
+  const loadingMessage = floatingChatMessages.querySelector('.loading-dots')?.parentElement;
+  if (loadingMessage) {
+    loadingMessage.remove();
+  }
+  
+  if (response.type === 'stream') {
+    if (!floatingCurrentResponseDiv) {
+      floatingCurrentResponseDiv = document.createElement('div');
+      floatingCurrentResponseDiv.className = 'chat-message assistant markdown-content';
+      floatingChatMessages.appendChild(floatingCurrentResponseDiv);
+      floatingCurrentResponseText = '';
+      showNotification('Receiving response from Ollama...', 'info');
+    }
+    
+    floatingCurrentResponseText += response.content;
+    floatingCurrentResponseDiv.innerHTML = window.api.marked(floatingCurrentResponseText);
+    floatingChatMessages.scrollTop = floatingChatMessages.scrollHeight;
+    
+    if (response.done) {
+      floatingCurrentResponseDiv = null;
+      floatingCurrentResponseText = '';
+      showNotification('Response completed', 'success');
+    }
+  } else if (response.type === 'error') {
+    showNotification('Ollama error: ' + response.error, 'error');
+    floatingCurrentResponseDiv = null;
+    floatingCurrentResponseText = '';
+
+    // Add error message to chat
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'chat-message assistant error';
+    errorDiv.textContent = '❌ ' + response.error;
+    floatingChatMessages.appendChild(errorDiv);
+    floatingChatMessages.scrollTop = floatingChatMessages.scrollHeight;
+  }
+});
   

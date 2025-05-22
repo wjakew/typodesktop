@@ -26,6 +26,10 @@
   </div>
   <div id="top-bar">
     <div class="top-bar-left">
+      <button id="floating-assistant-toggle" class="action-btn" title="Quick Assistant">
+        <i class="fas fa-robot"></i>
+        <span>typo friend</span>
+      </button>
       <div id="selected-note-name"></div>
     </div>
     <div class="top-bar-right">
@@ -181,6 +185,30 @@
       <div class="modal-buttons">
         <button id="save-export-chat" class="action-btn">Save Note</button>
         <button id="cancel-export-chat">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add floating assistant dialog -->
+  <div id="floating-assistant" class="floating-dialog hidden">
+    <div class="floating-dialog-header">
+      <div class="floating-dialog-title">Quick Assistant</div>
+      <div class="floating-dialog-controls">
+        <button id="minimize-assistant-btn" class="dialog-control-btn" title="Minimize">
+          <i class="fas fa-minus"></i>
+        </button>
+        <button id="close-assistant-btn" class="dialog-control-btn" title="Close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+    <div class="floating-dialog-content">
+      <div id="floating-chat-messages" class="chat-messages"></div>
+      <div class="floating-chat-input-container">
+        <textarea id="floating-chat-input" placeholder="Ask a quick question..."></textarea>
+        <button id="floating-send-chat" class="action-btn">
+          <i class="fas fa-paper-plane"></i>
+        </button>
       </div>
     </div>
   </div>
