@@ -301,7 +301,7 @@ function saveOllamaSettings(settings) {
 // Ollama API integration
 async function streamOllamaResponse(settings, message, currentContent, callback) {
   // Construct the full prompt with context
-  const fullPrompt = `You are a private assistant that assists by helping with user notes and knowledge. This is the context:\n${currentContent}\n\nThis is the whole conversation:\n${message.chatHistory || ''}\n\nThis is the current user prompt:\n${message.text}`;
+  const fullPrompt = `You are a private assistant that assists by helping with user notes and knowledge. Your answers are always in English. This is the context:\n${currentContent}\n\nThis is the whole conversation:\n${message.chatHistory || ''}\n\nThis is the current user prompt:\n${message.text}`;
 
   const requestData = {
     model: settings.model,
