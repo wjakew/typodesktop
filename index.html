@@ -94,6 +94,9 @@
       <button id="create-note-from-chat" class="action-btn" title="Create note from chat">
         <i class="fas fa-file-alt"></i> Create AI Note
       </button>
+      <button id="export-chat" class="action-btn" title="Export chat as note">
+        <i class="fas fa-file-export"></i>
+      </button>
       <button id="clear-chat" class="action-btn" title="Clear chat history">
         <i class="fas fa-trash"></i>
       </button>
@@ -147,6 +150,34 @@
       <div class="modal-buttons">
         <button id="save-note-from-chat" class="action-btn">Save Note</button>
         <button id="cancel-note-from-chat">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add export chat modal -->
+  <div id="export-chat-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Export Chat as Note</h2>
+      <div class="form-group">
+        <label for="export-note-title">Note Title:</label>
+        <input type="text" id="export-note-title" placeholder="Enter note title" />
+      </div>
+      <div class="form-group">
+        <label for="export-note-location">Save Location:</label>
+        <div class="location-input-group">
+          <input type="text" id="export-note-location" placeholder="Enter folder path or leave empty for root" />
+          <button id="export-browse-location" class="action-btn icon-only" title="Browse Folders">
+            <i class="fas fa-folder-open"></i>
+          </button>
+        </div>
+      </div>
+      <div class="note-preview-container">
+        <h3>Preview</h3>
+        <div id="export-note-preview" class="note-preview"></div>
+      </div>
+      <div class="modal-buttons">
+        <button id="save-export-chat" class="action-btn">Save Note</button>
+        <button id="cancel-export-chat">Cancel</button>
       </div>
     </div>
   </div>

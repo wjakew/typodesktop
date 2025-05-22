@@ -21,7 +21,7 @@ const api = {
   loadFileByPath: (path) => ipcRenderer.invoke('load-file-by-path', path),
   saveFile: (filename, content) => ipcRenderer.invoke('save-file', filename, content),
   renameFile: (oldFilename, newFilename) => ipcRenderer.invoke('rename-file', oldFilename, newFilename),
-  createNewFile: (filePath) => ipcRenderer.invoke('create-new-file', filePath),
+  createNewFile: (filePath, content) => ipcRenderer.invoke('create-new-file', filePath, content),
   // Window controls
   minimizeWindow: () => ipcRenderer.invoke('window-minimize'),
   maximizeWindow: () => ipcRenderer.invoke('window-maximize'),

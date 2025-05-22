@@ -644,6 +644,123 @@ clearChatBtn.addEventListener('click', () => {
   showNotification('Chat history cleared', 'success');
 });
 
+// Export chat functionality
+const exportChatBtn = document.getElementById('export-chat');
+const exportChatModal = document.getElementById('export-chat-modal');
+const exportNoteTitleInput = document.getElementById('export-note-title');
+const exportNoteLocationInput = document.getElementById('export-note-location');
+const exportBrowseLocationBtn = document.getElementById('export-browse-location');
+const exportNotePreview = document.getElementById('export-note-preview');
+const saveExportChatBtn = document.getElementById('save-export-chat');
+const cancelExportChatBtn = document.getElementById('cancel-export-chat');
+
+// Function to format chat messages as markdown
+function formatChatAsMarkdown() {
+  const messages = Array.from(chatMessages.children).map(msg => {
+    const isUser = msg.classList.contains('user');
+    let content = '';
+    
+    // Handle both plain text and markdown content
+    if (msg.classList.contains('markdown-content')) {
+      content = msg.innerHTML;
+    } else {
+      content = msg.textContent;
+    }
+    
+    return `${isUser ? '**You:**' : '**Assistant:**'}\n${content}\n`;
+  }).join('\n');
+
+  return messages;
+}
+
+// Show export chat modal
+exportChatBtn.addEventListener('click', () => {
+  const messages = formatChatAsMarkdown();
+  
+  if (!messages) {
+    showNotification('No chat messages to export', 'info');
+    return;
+  }
+
+  // Set default title with current date
+  exportNoteTitleInput.value = `Chat_${new Date().toISOString().split('T')[0]}`;
+  exportNoteLocationInput.value = '';
+  
+  // Show preview
+  exportNotePreview.innerHTML = window.api.marked(messages);
+  exportNotePreview.dataset.markdown = messages;
+  
+  // Show modal
+  exportChatModal.classList.remove('hidden');
+  exportNoteTitleInput.focus();
+});
+
+// Browse location button functionality
+exportBrowseLocationBtn.addEventListener('click', async () => {
+  try {
+    const result = await window.api.selectSaveLocation();
+    if (result && result.folderPath) {
+      exportNoteLocationInput.value = result.folderPath;
+    }
+  } catch (error) {
+    console.error('Error selecting folder:', error);
+    showNotification('Error selecting folder', 'error');
+  }
+});
+
+// Save exported chat
+saveExportChatBtn.addEventListener('click', async () => {
+  const title = exportNoteTitleInput.value.trim();
+  if (!title) {
+    showNotification('Please enter a title for the note', 'error');
+    return;
+  }
+
+  try {
+    const fileName = title.endsWith('.md') ? title : `${title}.md`;
+    const location = exportNoteLocationInput.value.trim();
+    
+    // Combine location and filename
+    const fullPath = location ? `${location}/${fileName}` : fileName;
+    
+    // Get the markdown content from the preview
+    const content = exportNotePreview.dataset.markdown;
+    
+    // Create the new file
+    const result = await window.api.createNewFile(fullPath, content);
+    
+    if (result.success) {
+      exportChatModal.classList.add('hidden');
+      
+      // Refresh the file list
+      const files = await window.api.readFiles();
+      updateFileList(files);
+      
+      // Load the new file
+      await loadFileContent(result.filename);
+      
+      showNotification('Chat exported as note successfully!', 'success');
+    } else {
+      showNotification(result.error || 'Failed to export chat', 'error');
+    }
+  } catch (error) {
+    console.error('Error exporting chat:', error);
+    showNotification('Error exporting chat', 'error');
+  }
+});
+
+// Cancel export
+cancelExportChatBtn.addEventListener('click', () => {
+  exportChatModal.classList.add('hidden');
+});
+
+// Close modal when clicking outside
+exportChatModal.addEventListener('click', (e) => {
+  if (e.target === exportChatModal) {
+    exportChatModal.classList.add('hidden');
+  }
+});
+
 // Handle streaming response
 let currentResponseDiv = null;
 let currentResponseText = '';

@@ -211,7 +211,7 @@ ipcMain.handle('rename-file', (event, oldFilename, newFilename) => {
   }
 });
 
-ipcMain.handle('create-new-file', (event, filePath) => {
+ipcMain.handle('create-new-file', (event, filePath, content = '') => {
   try {
     // Check if folder is selected
     if (!folderPath) {
@@ -238,8 +238,8 @@ ipcMain.handle('create-new-file', (event, filePath) => {
       return { success: false, error: 'File already exists' };
     }
     
-    // Create empty file
-    fs.writeFileSync(fullPath, '');
+    // Create file with content
+    fs.writeFileSync(fullPath, content);
     console.log('Created new file:', fullPath);
     
     return { success: true, filename: newName };
