@@ -407,3 +407,10 @@ body {
 .tree-children.hidden {
   display: none;
 }
+
+#selected-note-name {
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+    padding: 8px;
+}

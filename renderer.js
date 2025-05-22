@@ -5,6 +5,12 @@ let originalContent = '';
 let folderPath = null;
 let selectedFolderPath = '';
 
+// Function to update selected note name in top bar
+function updateSelectedNoteName(filename) {
+    const selectedNoteNameElement = document.getElementById('selected-note-name');
+    selectedNoteNameElement.textContent = filename || '';
+}
+
 // Change folder button functionality
 const changeFolderBtn = document.getElementById('change-folder-btn');
 changeFolderBtn.addEventListener('click', async () => {
@@ -15,6 +21,9 @@ changeFolderBtn.addEventListener('click', async () => {
             return;
         }
     }
+    
+    // Clear selected note name when switching folders
+    updateSelectedNoteName('');
     
     try {
         await window.api.showFolderDialog();
@@ -251,12 +260,13 @@ function createFolderTreeItem(item, level = 0) {
       if (selectedFile) {
         selectedFile.classList.remove('selected');
       }
-
-      // Add selected class to current item
-      itemContent.classList.add('selected');
       selectedFile = itemContent;
+      itemContent.classList.add('selected');
+      
+      // Update selected note name in top bar
+      updateSelectedNoteName(item.name);
 
-      // Load the file content
+      // Load file content
       await loadFileContent(item.path);
     };
 
