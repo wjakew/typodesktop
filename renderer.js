@@ -661,4 +661,10 @@ window.api.onChatResponse((event, response) => {
     }
   }
 });
+
+// Chat toggle functionality
+const chatToggleBtn = document.getElementById('chat-toggle');
+chatToggleBtn.addEventListener('click', () => {
+  toggleChat();
+});
   
