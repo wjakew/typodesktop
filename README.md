@@ -58,6 +58,8 @@ npm run <selected architecture>
 
 ## Features in Detail
 
+![src4](/readme_resources/src4.png)
+
 ### File Management
 - Select a working directory for your Markdown files
 - Create new Markdown files
