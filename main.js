@@ -110,8 +110,14 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
+  app.quit();
+});
+
+// Add handler for app cleanup before quitting
+app.on('before-quit', () => {
+  if (mainWindow) {
+    mainWindow.removeAllListeners('close');
+    mainWindow = null;
   }
 });
 
