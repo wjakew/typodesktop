@@ -1105,3 +1105,29 @@ body {
     gap: 8px;
     align-items: center;
 }
+
+.folder-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.folder-actions .action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+}
+
+#current-folder-path {
+  width: 100%;
+  padding: 8px;
+  background-color: var(--bg-color-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-color);
+  font-family: monospace;
+  cursor: default;
+}

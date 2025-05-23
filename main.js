@@ -436,3 +436,24 @@ ipcMain.handle('send-chat-message', async (event, message) => {
   
   return true;
 });
+
+// Function to clear stored folder path
+function clearStoredFolderPath() {
+  const userDataPath = app.getPath('userData');
+  const configPath = path.join(userDataPath, 'config.json');
+  try {
+    if (fs.existsSync(configPath)) {
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      config.lastFolder = null;
+      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    }
+  } catch (error) {
+    console.error('Error clearing stored folder path:', error);
+  }
+}
+
+// Add handler for clearing folder path
+ipcMain.handle('clear-folder-path', () => {
+  folderPath = null;
+  clearStoredFolderPath();
+});

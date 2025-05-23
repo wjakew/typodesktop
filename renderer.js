@@ -15,24 +15,9 @@ function updateSelectedNoteName(filename) {
 
 // Change folder button functionality
 const changeFolderBtn = document.getElementById('change-folder-btn');
-changeFolderBtn.addEventListener('click', async () => {
-    // Check if there are unsaved changes
-    if (isEditing) {
-        const confirmSwitch = confirm('You have unsaved changes. Do you want to change folders without saving?');
-        if (!confirmSwitch) {
-            return;
-        }
-    }
-    
-    // Clear selected note name when switching folders
-    updateSelectedNoteName('');
-    
-    try {
-        await window.api.showFolderDialog();
-        // The folder-selected event handler will handle the rest
-    } catch (error) {
-        showNotification('Error changing folder', 'error');
-    }
+changeFolderBtn.addEventListener('click', () => {
+  currentFolderPath.value = folderPath || 'No folder selected';
+  folderManagementModal.classList.remove('hidden');
 });
 
 // Theme toggle functionality
@@ -1245,5 +1230,88 @@ window.api.onChatResponse((event, response) => {
     floatingChatMessages.appendChild(errorDiv);
     floatingChatMessages.scrollTop = floatingChatMessages.scrollHeight;
   }
+});
+
+// Folder management modal functionality
+const folderManagementModal = document.getElementById('folder-management-modal');
+const currentFolderPath = document.getElementById('current-folder-path');
+const browseNewFolderBtn = document.getElementById('browse-new-folder');
+const closeFolderBtn = document.getElementById('close-folder');
+const closeFolderDialogBtn = document.getElementById('close-folder-dialog');
+
+// Show folder management modal when change folder button is clicked
+changeFolderBtn.addEventListener('click', () => {
+  currentFolderPath.value = folderPath || 'No folder selected';
+  folderManagementModal.classList.remove('hidden');
+});
+
+// Close folder management modal
+closeFolderDialogBtn.addEventListener('click', () => {
+  folderManagementModal.classList.add('hidden');
+});
+
+// Browse for new folder
+browseNewFolderBtn.addEventListener('click', async () => {
+  // Check if there are unsaved changes
+  if (isEditing) {
+    const confirmSwitch = confirm('You have unsaved changes. Do you want to change folders without saving?');
+    if (!confirmSwitch) {
+      return;
+    }
+  }
+  
+  // Clear selected note name when switching folders
+  updateSelectedNoteName('');
+  
+  try {
+    await window.api.showFolderDialog();
+    // The folder-selected event handler will handle the rest
+    folderManagementModal.classList.add('hidden');
+  } catch (error) {
+    showNotification('Error changing folder', 'error');
+  }
+});
+
+// Close current folder
+closeFolderBtn.addEventListener('click', async () => {
+  if (isEditing) {
+    const confirmClose = confirm('You have unsaved changes. Do you want to close the folder without saving?');
+    if (!confirmClose) {
+      return;
+    }
+  }
+
+  // Clear everything
+  folderPath = null;
+  selectedFolderPath = '';
+  editor.value = '';
+  originalContent = '';
+  currentFile = null;
+  isEditing = false;
+  saveBtn.classList.remove('has-changes');
+  
+  // Clear selected note name
+  updateSelectedNoteName('');
+  
+  // Clear file list
+  const filesContainer = document.getElementById('files-container');
+  filesContainer.innerHTML = '';
+  
+  // Update current folder path display
+  currentFolderPath.value = 'No folder selected';
+  
+  // Clear stored folder path
+  await window.api.clearFolderPath();
+  
+  // Hide the modal
+  folderManagementModal.classList.add('hidden');
+  
+  showNotification('Folder closed', 'info');
+});
+
+// Update folder path in modal when folder is selected
+window.api.onFolderSelected((folder) => {
+  currentFolderPath.value = folder;
+  folderPath = folder;
 });
   

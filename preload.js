@@ -40,7 +40,8 @@ const api = {
     return () => {
       ipcRenderer.removeListener('chat-response', callback);
     };
-  }
+  },
+  clearFolderPath: () => ipcRenderer.invoke('clear-folder-path'),
 };
 
 // Expose the API to the renderer process
