@@ -1144,19 +1144,35 @@ body {
   cursor: default;
 }
 
+/* Add gradient animation keyframes */
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 #welcome-screen {
   display: flex;
   align-items: center;
-  align-content: center;
   justify-content: center;
-  height: 100vh; /* Full height */
-  background-color: var(--bg-color);
+  height: calc(100vh - 32px); /* Subtract titlebar height */
+  background: linear-gradient(-45deg, #000000, #1a0033, #4d0099, #7b2cbf);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
 }
 
 .welcome-content {
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
-  align-content: center;
   padding: 40px;
   max-width: 600px;
 }
@@ -1164,16 +1180,31 @@ body {
 .welcome-content h1 {
   font-size: 48px;
   margin-bottom: 20px;
-  color: var(--text-color);
+  color: white; /* Change text color to white for better contrast */
   font-weight: 700;
   font-family: monospace;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); /* Add subtle text shadow */
 }
 
 .welcome-content p {
   font-size: 18px;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
   margin-bottom: 40px;
   font-family: monospace;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); /* Subtle text shadow */
+}
+
+#welcome-open-folder {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  font-size: 16px;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+#welcome-open-folder i {
+  font-size: 18px;
 }
 
 .primary-btn {
