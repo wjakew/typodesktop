@@ -1,8 +1,12 @@
 # Typo
-
+![logo](/readme_resources/logo.PNG)
 typo is a lightweight, local-first application designed to help you build and manage a personalized knowledge base. With full integration of Ollama—which you can host locally—it ensures your data remains entirely private and secure.
 
+![src1](/readme_resources/src1.png)
+
 Typo provides a clean, intuitive interface for browsing, editing, and organizing Markdown files within a chosen directory. Whether you’re documenting projects, taking notes, or curating research, Typo offers a seamless experience tailored for productivity and privacy.
+
+![src2](/readme_resources/src2.png)
 
 ## Features
 
@@ -13,6 +17,8 @@ Typo provides a clean, intuitive interface for browsing, editing, and organizing
 - 🎨 Clean and intuitive user interface
 - 🚀 Fast and lightweight
 - 🤖 AI-powered assistance with Ollama integration
+
+![src3](/readme_resources/src3.png)
 
 ## Installation
 
@@ -35,9 +41,12 @@ To run the application in development mode:
 npm start
 ```
 
-### Developer Tools
+To build the application (using electron-builder):
 
-You can open the Developer Tools by pressing `Ctrl+I` (or `Cmd+I` on macOS) while the application is running.
+```bash
+npm run <selected architecture>
+```
+
 
 ## Application Structure
 
