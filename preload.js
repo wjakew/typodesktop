@@ -15,6 +15,7 @@ marked.use({
 // Create the API object
 const api = {
   onFolderSelected: (callback) => ipcRenderer.on('folder-selected', (event, path) => callback(path)),
+  onFolderClosed: (callback) => ipcRenderer.on('folder-closed', () => callback()),
   showFolderDialog: () => ipcRenderer.invoke('show-folder-dialog'),
   selectSaveLocation: () => ipcRenderer.invoke('select-save-location'),
   readFiles: () => ipcRenderer.invoke('read-files'),

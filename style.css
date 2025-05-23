@@ -44,6 +44,14 @@ body {
     height: 100vh;
     background-color: var(--bg-primary);
     color: var(--text-primary);
+    overflow: hidden;
+}
+
+#app-content {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 32px);
+    overflow: hidden;
 }
 
 #top-bar {
@@ -89,6 +97,7 @@ body {
     overflow: hidden;
     position: relative;
     z-index: 1;
+    min-height: 0;
 }
 
 #file-list { 
@@ -101,6 +110,8 @@ body {
     box-shadow: 2px 0 5px var(--shadow-color);
     resize: horizontal;
     z-index: 2;
+    height: 100%;
+    box-sizing: border-box;
 }
 
 .file-item {
@@ -145,6 +156,7 @@ body {
     flex-direction: column;
     overflow: hidden;
     transition: width 0.3s ease;
+    min-height: 0;
 }
 
 .editor-wrapper {
@@ -1130,4 +1142,56 @@ body {
   color: var(--text-color);
   font-family: monospace;
   cursor: default;
+}
+
+#welcome-screen {
+  display: flex;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+  height: 100vh; /* Full height */
+  background-color: var(--bg-color);
+}
+
+.welcome-content {
+  align-items: center;
+  text-align: center;
+  align-content: center;
+  padding: 40px;
+  max-width: 600px;
+}
+
+.welcome-content h1 {
+  font-size: 48px;
+  margin-bottom: 20px;
+  color: var(--text-color);
+  font-weight: 700;
+  font-family: monospace;
+}
+
+.welcome-content p {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+  font-family: monospace;
+}
+
+.primary-btn {
+  background-color: var(--accent-color) !important;
+  color: white !important;
+  padding: 12px 24px !important;
+  font-size: 16px !important;
+  border-radius: 8px !important;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, background-color 0.2s ease !important;
+}
+
+.primary-btn:hover {
+  background-color: var(--accent-hover) !important;
+  transform: translateY(-2px);
+}
+
+.hidden {
+  display: none !important;
 }

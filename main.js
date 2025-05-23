@@ -100,8 +100,6 @@ app.whenReady().then(() => {
     mainWindow.webContents.on('did-finish-load', () => {
       mainWindow.webContents.send('folder-selected', folderPath);
     });
-  } else {
-    showFolderDialog();
   }
 
   app.on('activate', () => {
@@ -437,23 +435,22 @@ ipcMain.handle('send-chat-message', async (event, message) => {
   return true;
 });
 
-// Function to clear stored folder path
-function clearStoredFolderPath() {
-  const userDataPath = app.getPath('userData');
-  const configPath = path.join(userDataPath, 'config.json');
-  try {
-    if (fs.existsSync(configPath)) {
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-      config.lastFolder = null;
-      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    }
-  } catch (error) {
-    console.error('Error clearing stored folder path:', error);
-  }
-}
-
 // Add handler for clearing folder path
 ipcMain.handle('clear-folder-path', () => {
   folderPath = null;
   clearStoredFolderPath();
+  if (mainWindow) {
+    mainWindow.webContents.send('folder-closed');
+  }
+  return true;
 });
+
+function clearStoredFolderPath() {
+  const userDataPath = app.getPath('userData');
+  const configPath = path.join(userDataPath, 'config.json');
+  try {
+    fs.writeFileSync(configPath, JSON.stringify({ lastFolder: null }));
+  } catch (error) {
+    console.error('Error clearing folder path:', error);
+  }
+}

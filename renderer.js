@@ -5,6 +5,68 @@ let originalContent = '';
 let folderPath = null;
 let selectedFolderPath = '';
 
+// Get DOM elements
+const welcomeScreen = document.getElementById('welcome-screen');
+const appContent = document.getElementById('app-content');
+const welcomeOpenFolderBtn = document.getElementById('welcome-open-folder');
+
+// Function to show/hide welcome screen based on folder selection
+function updateAppState() {
+  if (folderPath) {
+    welcomeScreen.classList.add('hidden');
+    appContent.classList.remove('hidden');
+  } else {
+    welcomeScreen.classList.remove('hidden');
+    appContent.classList.add('hidden');
+    // Clear editor and file list when showing welcome screen
+    editor.value = '';
+    originalContent = '';
+    currentFile = null;
+    isEditing = false;
+    saveBtn.classList.remove('has-changes');
+    const filesContainer = document.getElementById('files-container');
+    filesContainer.innerHTML = '';
+    updateSelectedNoteName('');
+  }
+}
+
+// Handle welcome screen open folder button
+welcomeOpenFolderBtn.addEventListener('click', async () => {
+  try {
+    await window.api.showFolderDialog();
+  } catch (error) {
+    showNotification('Error opening folder', 'error');
+  }
+});
+
+// Update the folder selected handler
+window.api.onFolderSelected(async (folder) => {
+  try {
+    folderPath = folder;
+    updateAppState();
+    const files = await window.api.readFiles();
+    updateFileList(files);
+    showNotification('Folder opened successfully!', 'success');
+  } catch (error) {
+    showNotification('Error loading files', 'error');
+  }
+});
+
+// Handle folder closing
+window.api.onFolderClosed(() => {
+  folderPath = null;
+  updateAppState();
+  // Clear editor and file list
+  editor.value = '';
+  originalContent = '';
+  currentFile = null;
+  isEditing = false;
+  saveBtn.classList.remove('has-changes');
+  const filesContainer = document.getElementById('files-container');
+  filesContainer.innerHTML = '';
+  updateSelectedNoteName('');
+});
+
 // Function to update selected note name in top bar
 function updateSelectedNoteName(filename) {
     const selectedNoteNameElement = document.getElementById('selected-note-name');
@@ -362,17 +424,6 @@ async function loadFileContent(filePath) {
     showNotification('Error loading file', 'error');
   }
 }
-
-// Update the folder selected handler
-window.api.onFolderSelected(async (folder) => {
-    try {
-        folderPath = folder;
-        const files = await window.api.readFiles();
-        updateFileList(files);
-    } catch (error) {
-        showNotification('Error loading files', 'error');
-    }
-});
 
 // Notification function
 function showNotification(message, type = 'success') {
